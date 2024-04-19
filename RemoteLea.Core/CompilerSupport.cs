@@ -1,7 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-
-using System.ComponentModel;
+﻿using System.ComponentModel;
 
 // This code allows the older runtimes to use newer language features.
 namespace System.Runtime.CompilerServices

@@ -1,40 +1,101 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace RemoteLea.Core;
 
 /// <summary>
-/// Description for how to run a specific instruction
-/// </summary>
-/// <param name="OpCode">The op code for the desired instruction to run</param>
-/// <param name="Arguments">Named arguments being executed</param>
-/// <param name="OutputVariableNames">Names of the variables to save each output to</param>
-public record ExecutableInstruction(
-    string OpCode,
-    IReadOnlyDictionary<string, string> Arguments,
-    IReadOnlyDictionary<string, string> OutputVariableNames);
-
-/// <summary>
 /// A set of instructions that can be executed in order
 /// </summary>
-public class InstructionSet : IEnumerator<ExecutableInstruction>
+public class InstructionSet
 {
-    public bool MoveNext()
+    private readonly List<Instruction> _instructions;
+    private readonly Dictionary<string, int> _labelIndices = new(StringComparer.OrdinalIgnoreCase);
+
+    public InstructionSet(List<Instruction> instructions)
     {
-        throw new System.NotImplementedException();
+        _instructions = instructions;
+        for (var x = 0; x < instructions.Count; x++)
+        {
+            var instruction = instructions[x];
+            if (instruction.Label != null)
+            {
+                if (!_labelIndices.TryAdd(instruction.Label.Trim(), x))
+                {
+                    var message = $"Multiple instructions contain the label '{instruction.Label}'. Labels must be unique";
+                    throw new InvalidOperationException(message);
+                }
+            }
+        }
     }
 
-    public void Reset()
+    /// <summary>
+    /// Creates a new enumerator for the instruction set.
+    /// </summary>
+    /// <returns></returns>
+    public InstructionSetEnumerator GetEnumerator()
     {
-        throw new System.NotImplementedException();
-    }
-    
-    public void Dispose()
-    {
-        // TODO release managed resources here
+        return new InstructionSetEnumerator(this);
     }
 
-    public ExecutableInstruction Current { get; }
+    /// <summary>
+    /// Enumerates each instruction in the instruction set.
+    /// </summary>
+    public struct InstructionSetEnumerator : IEnumerator<Instruction?>
+    {
+        private readonly InstructionSet _instructionSet;
+        private int _currentIndex;
 
-    object IEnumerator.Current => Current;
+        public Instruction? Current { get; set; }
+        object? IEnumerator.Current => Current;
+
+        internal InstructionSetEnumerator(InstructionSet instructionSet)
+        {
+            _instructionSet = instructionSet;
+            Reset();
+        }
+        
+        public bool MoveNext()
+        {
+            _currentIndex++;
+            SetCurrent();
+
+            return Current != null;
+        }
+
+        /// <summary>
+        /// Sets the current instruction to the instruction with the specified label
+        /// </summary>
+        /// <returns>
+        /// Returns true if the labelled instruction is now being pointed at, or false if the label doesn't exist
+        /// </returns>
+        public bool MoveToLabel(string label)
+        {
+            if (!_instructionSet._labelIndices.TryGetValue(label.Trim(), out var index))
+            {
+                return false;
+            }
+            
+            _currentIndex = index;
+            SetCurrent();
+            return true;
+        }
+
+        public void Reset()
+        {
+            _currentIndex = 0;
+            SetCurrent();
+        }
+        
+        public void Dispose()
+        {
+        }
+
+        private void SetCurrent()
+        {
+            Current = _currentIndex < _instructionSet._instructions.Count
+                ? _instructionSet._instructions[_currentIndex]
+                : null;
+        }
+    }
 }
