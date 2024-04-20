@@ -26,9 +26,7 @@ public class AddOperation : OperationBase
 
         if (!context.Variables.TryGetValue(parsedArguments.Variable.VariableName, out var variable))
         {
-            var message = $"Variable `{parsedArguments.Variable.VariableName}` does not exist";
-            context.Log(LogLevel.Error, nameof(AddOperation), message);
-
+            context.Log.ReferencedVariableDoesntExist(parsedArguments.Variable.VariableName);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
@@ -37,13 +35,12 @@ public class AddOperation : OperationBase
             var sum = integer + parsedArguments.Value;
             context.Outputs[parsedArguments.Variable.VariableName] = sum;
             context.Log(LogLevel.Info,
-                nameof(AddOperation),
                 $"Added {parsedArguments.Value} to {parsedArguments.Variable.VariableName} (new value = {sum})");
         }
         else
         {
             var message = $"Variable {parsedArguments.Variable.VariableName} is a {variable.GetType()}, not an int";
-            context.Log(LogLevel.Error, nameof(AddOperation), message);
+            context.Log(LogLevel.Error, message);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 

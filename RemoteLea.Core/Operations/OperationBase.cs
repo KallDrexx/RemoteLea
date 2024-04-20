@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 
 namespace RemoteLea.Core.Operations;
@@ -55,7 +54,7 @@ public abstract class OperationBase
 
     protected abstract ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context);
 
-    protected T? ParseArguments<T>(IReadOnlyDictionary<string, IArgumentValue> arguments, LogFunction log)
+    protected T? ParseArguments<T>(IReadOnlyDictionary<string, IArgumentValue> arguments, InstructionLogFunction log)
         where T : class, new()
     {
         var result = new T();
@@ -69,7 +68,7 @@ public abstract class OperationBase
             {
                 if (isRequired)
                 {
-                    log.RequiredArgumentNotProvided(name, GetType().Name);
+                    log.RequiredArgumentNotProvided(name);
                     return null;
                 }
                 
@@ -86,7 +85,7 @@ public abstract class OperationBase
                 {
                     if (isRequired)
                     {
-                        log.IncorrectArgumentType(name, GetType().Name, argumentValue.GetType(), ParameterType.Integer);
+                        log.IncorrectArgumentType(name, argumentValue.GetType(), ParameterType.Integer);
                         return null;
                     }
                     
@@ -105,7 +104,7 @@ public abstract class OperationBase
                 {
                     if (isRequired)
                     {
-                        log.IncorrectArgumentType(name, GetType().Name, argumentValue.GetType(), ParameterType.Bool);
+                        log.IncorrectArgumentType(name, argumentValue.GetType(), ParameterType.Bool);
                         return null;
                     }
                     
@@ -124,7 +123,7 @@ public abstract class OperationBase
                 {
                     if (isRequired)
                     {
-                        log.IncorrectArgumentType(name, GetType().Name, argumentValue.GetType(), ParameterType.String);
+                        log.IncorrectArgumentType(name, argumentValue.GetType(), ParameterType.String);
                         return null;
                     }
                     
@@ -143,7 +142,7 @@ public abstract class OperationBase
                 {
                     if (isRequired)
                     {
-                        log.IncorrectArgumentType(name, GetType().Name, argumentValue.GetType(), ParameterType.ByteArray);
+                        log.IncorrectArgumentType(name, argumentValue.GetType(), ParameterType.ByteArray);
                         return null;
                     }
                     
@@ -162,7 +161,7 @@ public abstract class OperationBase
                 {
                     if (isRequired)
                     {
-                        log.IncorrectArgumentType(name, GetType().Name, argumentValue.GetType(), ParameterType.VariableReference);
+                        log.IncorrectArgumentType(name, argumentValue.GetType(), ParameterType.VariableReference);
                         return null;
                     }
                     

@@ -10,22 +10,26 @@ public enum LogLevel { Info, Warning, Error }
 /// </summary>
 public delegate void LogFunction(LogLevel level, string operationName, string message);
 
+/// <summary>
+/// A function that logs a message scoped to a specific instruction
+/// </summary>
+public delegate void InstructionLogFunction(LogLevel level, string message);
+
 public static class LogUtils
 {
     /// <summary>
     /// Logs an error that a required argument was not provided
     /// </summary>
-    public static void RequiredArgumentNotProvided(this LogFunction logger, string operationName, string argumentName)
+    public static void RequiredArgumentNotProvided(this InstructionLogFunction logger, string argumentName)
     {
-        logger(LogLevel.Error, operationName, $"Argument `{argumentName}` not provided but is required");
+        logger(LogLevel.Error, $"Argument `{argumentName}` not provided but is required");
     }
 
     /// <summary>
     /// Logs an error that an argument was provided with an unexpected type
     /// </summary>
     public static void IncorrectArgumentType(
-        this LogFunction logger, 
-        string operationName,
+        this InstructionLogFunction logger, 
         string argumentName, 
         Type argumentType, 
         ParameterType allowedTypes)
@@ -38,15 +42,15 @@ public static class LogUtils
             .Aggregate((x, y) => $"{x}, {y}");
 
         var message = $"Argument `{argumentName}` had an unsupported type of `{argumentType.Name}`. Valid types are: {validTypeString}";
-        logger(LogLevel.Error, operationName, message);
+        logger(LogLevel.Error, message);
     }
 
     /// <summary>
     /// Logs an error if a variable was referenced that does not exist
     /// </summary>
-    public static void ReferencedVariableDoesntExist(this LogFunction logger, string operationName, string variableName)
+    public static void ReferencedVariableDoesntExist(this InstructionLogFunction logger, string variableName)
     {
         var message = $"Variable with the name `{variableName}` was referenced but does not currently exist";
-        logger(LogLevel.Error, operationName, message);
+        logger(LogLevel.Error, message);
     }
 }

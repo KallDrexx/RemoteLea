@@ -11,6 +11,6 @@ public interface IOperationExecutionContext
     IReadOnlyDictionary<string, IArgumentValue> Arguments { get; }
     IReadOnlyDictionary<string, object> Variables { get; }
     Dictionary<string, object> Outputs { get; }
-    LogFunction Log { get; }
+    InstructionLogFunction Log { get; }
     CancellationToken CancellationToken { get; }
 }

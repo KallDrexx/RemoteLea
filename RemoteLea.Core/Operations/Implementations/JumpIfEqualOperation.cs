@@ -28,13 +28,13 @@ public class JumpIfEqualOperation : OperationBase
 
         if (!context.Variables.TryGetValue(parsedArgs.First.VariableName, out var first))
         {
-            context.Log.ReferencedVariableDoesntExist(GetType().Name, parsedArgs.First.VariableName);
+            context.Log.ReferencedVariableDoesntExist(parsedArgs.First.VariableName);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
         if (!context.Variables.TryGetValue(parsedArgs.Second.VariableName, out var second))
         {
-            context.Log.ReferencedVariableDoesntExist(GetType().Name, parsedArgs.Second.VariableName);
+            context.Log.ReferencedVariableDoesntExist(parsedArgs.Second.VariableName);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
@@ -44,7 +44,7 @@ public class JumpIfEqualOperation : OperationBase
                           $"variable `{parsedArgs.Second.VariableName}` has a type of {second.GetType().Name}. Considering" +
                           $"them as not equal";
 
-            context.Log(LogLevel.Warning, GetType().Name, message);
+            context.Log(LogLevel.Warning, message);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());
         }
 

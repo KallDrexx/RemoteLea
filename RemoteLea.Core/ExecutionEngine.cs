@@ -30,8 +30,7 @@ public class ExecutionEngine
     public async Task Execute(InstructionSet instructions)
     {
         _cancellationTokenSource = new CancellationTokenSource();
-        var executionContext =
-            new OperationExecutionContext(_variables, _outputs, _logFunction, _cancellationTokenSource.Token);
+        var executionContext = new OperationExecutionContext(_variables, _outputs, _cancellationTokenSource.Token);
         
         // TODO: Probably need a way to provide initial variables (e.g. an SPI bus that's already been created)
         // TODO: Add logging
@@ -57,7 +56,14 @@ public class ExecutionEngine
             }
 
             _outputs.Clear();
+
+            void LogFunction(LogLevel level, string message)
+            {
+                _logFunction(level, operation.GetType().Name, message);
+            }
+            
             executionContext.Arguments = instruction.Arguments;
+            executionContext.Log = LogFunction;
             var result = await operation.ExecuteAsync(executionContext);
             
             if (!result.WasSuccessful)
@@ -107,16 +113,18 @@ public class ExecutionEngine
     private class OperationExecutionContext : IOperationExecutionContext
     {
         public IReadOnlyDictionary<string, IArgumentValue> Arguments { get; set; } = null!;
+        public InstructionLogFunction Log { get; set; } = null!;
         public IReadOnlyDictionary<string, object> Variables { get; }
         public Dictionary<string, object> Outputs { get; }
-        public LogFunction Log { get; }
         public CancellationToken CancellationToken { get; }
         
-        public OperationExecutionContext(IReadOnlyDictionary<string, object> variables, Dictionary<string, object> outputs, LogFunction log, CancellationToken cancellationToken)
+        public OperationExecutionContext(
+            IReadOnlyDictionary<string, object> variables, 
+            Dictionary<string, object> outputs, 
+            CancellationToken cancellationToken)
         {
             Variables = variables;
             Outputs = outputs;
-            Log = log;
             CancellationToken = cancellationToken;
         }
     }

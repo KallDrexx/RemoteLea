@@ -47,6 +47,8 @@ public class InstructionSet
         private int _currentIndex;
 
         public Instruction? Current { get; set; }
+        public int CurrentIndex => _currentIndex;
+        
         object? IEnumerator.Current => Current;
 
         internal InstructionSetEnumerator(InstructionSet instructionSet)

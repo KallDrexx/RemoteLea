@@ -27,46 +27,42 @@ public class SetValueOperation : OperationBase
         if (parsedArguments.IntValue != null)
         {
             context.Outputs[parsedArguments.OutputVariable.VariableName] = parsedArguments.IntValue.Value;
-            context.Log(LogLevel.Info, nameof(SetValueOperation),
+            context.Log(LogLevel.Info,
                 $"Set {parsedArguments.OutputVariable.VariableName} to {parsedArguments.IntValue}");
         }
         else if (parsedArguments.BoolValue != null)
         {
             context.Outputs[parsedArguments.OutputVariable.VariableName] = parsedArguments.BoolValue.Value;
-            context.Log(LogLevel.Info, nameof(SetValueOperation),
+            context.Log(LogLevel.Info,
                 $"Set {parsedArguments.OutputVariable.VariableName} to {parsedArguments.BoolValue}");
         }
         else if (parsedArguments.StringValue != null)
         {
             context.Outputs[parsedArguments.OutputVariable.VariableName] = parsedArguments.StringValue;
-            context.Log(LogLevel.Info, nameof(SetValueOperation),
+            context.Log(LogLevel.Info,
                 $"Set {parsedArguments.OutputVariable.VariableName} to {parsedArguments.StringValue}");
         }
         else if (parsedArguments.ByteArrayValue != null)
         {
             context.Outputs[parsedArguments.OutputVariable.VariableName] = parsedArguments.ByteArrayValue;
             context.Log(LogLevel.Info,
-                nameof(SetValueOperation),
                 $"Set {parsedArguments.OutputVariable.VariableName} to {Convert.ToString(parsedArguments.ByteArrayValue)}");
         }
         else if (parsedArguments.VariableValue != null)
         {
             if (!context.Variables.TryGetValue(parsedArguments.VariableValue.Value.VariableName, out var variable))
             {
-                context.Log(LogLevel.Error,
-                    nameof(SetValueOperation),
-                    $"Referenced variable {parsedArguments.VariableValue.Value.VariableName}` does not exist");
-            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+                context.Log.ReferencedVariableDoesntExist(parsedArguments.VariableValue.Value.VariableName);
+                return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
             }
 
             context.Outputs[parsedArguments.OutputVariable.VariableName] = variable;
-            context.Log(LogLevel.Info, nameof(SetValueOperation),
-                $"Set {parsedArguments.OutputVariable.VariableName} to {variable}");
+            context.Log(LogLevel.Info, $"Set {parsedArguments.OutputVariable.VariableName} to {variable}");
         }
         else
         {
             // TODO: Log if it was provided but an unknown type
-            context.Log.RequiredArgumentNotProvided(ValueParam, nameof(SetValueOperation));
+            context.Log.RequiredArgumentNotProvided(ValueParam);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
