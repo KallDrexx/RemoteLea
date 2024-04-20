@@ -29,9 +29,12 @@ public class ExecutionEngine
     /// <param name="instructions"></param>
     public async Task Execute(InstructionSet instructions)
     {
+        _cancellationTokenSource = new CancellationTokenSource();
+        var executionContext =
+            new OperationExecutionContext(_variables, _outputs, _logFunction, _cancellationTokenSource.Token);
+        
         // TODO: Probably need a way to provide initial variables (e.g. an SPI bus that's already been created)
         // TODO: Add logging
-        _cancellationTokenSource = new CancellationTokenSource();
         _variables.Clear();
 
         // We have to manage the instruction set enumerator ourselves to properly
@@ -54,16 +57,12 @@ public class ExecutionEngine
             }
 
             _outputs.Clear();
-            var wasSuccessful = await operation.ExecuteAsync(
-                instruction.Arguments, 
-                _variables, 
-                _outputs, 
-                _logFunction,
-                out var nextLabel);
+            executionContext.Arguments = instruction.Arguments;
+            var result = await operation.ExecuteAsync(executionContext);
             
-            if (!wasSuccessful)
+            if (!result.WasSuccessful)
             {
-                // TODO: log that we are stopping execution
+                _logFunction(LogLevel.Error, GetType().Name, "Instruction failed, stopping");
                 break;
             }
 
@@ -85,9 +84,9 @@ public class ExecutionEngine
                 }
             }
 
-            if (nextLabel != null)
+            if (result.JumpToLabel != null)
             {
-                enumerator.MoveToLabel(nextLabel);
+                enumerator.MoveToLabel(result.JumpToLabel);
             }
             else
             {
@@ -95,8 +94,30 @@ public class ExecutionEngine
             }
         }
 
+        if (_cancellationTokenSource.IsCancellationRequested)
+        {
+            _logFunction(LogLevel.Info, GetType().Name, "Execution cancelled");
+        }
+
         // TODO: We should have some way to track things that need to be "disposed". E.g. if an instruction
         // set creates a digital input, or adds an event to an interrupt, we should probably have some way
         // to remove it after the run so the instruction set can idempotently executed.
+    }
+
+    private class OperationExecutionContext : IOperationExecutionContext
+    {
+        public IReadOnlyDictionary<string, IArgumentValue> Arguments { get; set; } = null!;
+        public IReadOnlyDictionary<string, object> Variables { get; }
+        public Dictionary<string, object> Outputs { get; }
+        public LogFunction Log { get; }
+        public CancellationToken CancellationToken { get; }
+        
+        public OperationExecutionContext(IReadOnlyDictionary<string, object> variables, Dictionary<string, object> outputs, LogFunction log, CancellationToken cancellationToken)
+        {
+            Variables = variables;
+            Outputs = outputs;
+            Log = log;
+            CancellationToken = cancellationToken;
+        }
     }
 }

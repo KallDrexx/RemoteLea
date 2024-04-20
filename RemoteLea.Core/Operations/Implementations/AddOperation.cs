@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 
-namespace RemoteLea.Core.Operations;
+namespace RemoteLea.Core.Operations.Implementations;
 
 /// <summary>
 /// Operation that adds an integer to the specified variable. Supports negative numbers for
@@ -17,44 +16,38 @@ public class AddOperation : OperationBase
     private const ParameterType ValueType = ParameterType.Integer;
     private const ParameterType OutputType = ParameterType.VariableReference;
 
-    public override ValueTask<bool> ExecuteAsync(
-        IReadOnlyDictionary<string, IArgumentValue> arguments,
-        IReadOnlyDictionary<string, object> variables,
-        Dictionary<string, object> outputs,
-        LogFunction log,
-        out string? jumpToAddress)
+    protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
-        jumpToAddress = null;
-
-        var parsedArguments = FillFromArguments<Arguments>(arguments, log);
+        var parsedArguments = ParseArguments<Arguments>(context.Arguments, context.Log);
         if (parsedArguments == null)
         {
-            return new ValueTask<bool>(false);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        if (!variables.TryGetValue(parsedArguments.Variable.VariableName, out var variable))
+        if (!context.Variables.TryGetValue(parsedArguments.Variable.VariableName, out var variable))
         {
             var message = $"Variable `{parsedArguments.Variable.VariableName}` does not exist";
-            log(LogLevel.Error, nameof(AddOperation), message);
+            context.Log(LogLevel.Error, nameof(AddOperation), message);
 
-            return new ValueTask<bool>(false);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
         if (variable is int integer)
         {
             var sum = integer + parsedArguments.Value;
-            outputs[parsedArguments.Variable.VariableName] = sum;
-            log(LogLevel.Info,
+            context.Outputs[parsedArguments.Variable.VariableName] = sum;
+            context.Log(LogLevel.Info,
                 nameof(AddOperation),
                 $"Added {parsedArguments.Value} to {parsedArguments.Variable.VariableName} (new value = {sum})");
         }
         else
         {
             var message = $"Variable {parsedArguments.Variable.VariableName} is a {variable.GetType()}, not an int";
-            log(LogLevel.Error, nameof(AddOperation), message);
+            context.Log(LogLevel.Error, nameof(AddOperation), message);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        return new ValueTask<bool>(true);
+        return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());
     }
 
     private class Arguments
