@@ -10,6 +10,6 @@ namespace RemoteLea.Core;
 /// <param name="OutputVariableNames">Defines which output values should be stored into which variables</param>
 /// <param name="Label">A label that points to this specific instruction</param>
 public record Instruction(string OpCode, 
-    IReadOnlyDictionary<string, string> Arguments, 
+    IReadOnlyDictionary<string, IArgumentValue> Arguments, 
     IReadOnlyDictionary<string, string> OutputVariableNames,
     string? Label = null);

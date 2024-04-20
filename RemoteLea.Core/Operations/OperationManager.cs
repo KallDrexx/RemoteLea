@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace RemoteLea.Core;
+namespace RemoteLea.Core.Operations;
 
 /// <summary>
 /// Allows registration and resolution of operation implementations
@@ -15,7 +15,7 @@ public class OperationManager
         DuplicateOpCode = 1
     }
 
-    private record OperationInfo(OperationDefinition Definition, IOperation Implementation);
+    private record OperationInfo(OperationDefinition Definition, OperationBase Implementation);
 
     private readonly Dictionary<string, OperationInfo> _instructions = new();
 
@@ -27,7 +27,7 @@ public class OperationManager
     /// <summary>
     /// Registers the specified operation
     /// </summary>
-    public RegistrationResult Register(IOperation operation)
+    public RegistrationResult Register(OperationBase operation)
     {
         if (operation == null) throw new ArgumentNullException(nameof(operation));
 
@@ -41,7 +41,7 @@ public class OperationManager
     /// Retrieves an operation implementation based on the provided opcode. Returns `null` if no instruction
     /// has been registered for the specified opcode.
     /// </summary>
-    public IOperation? Resolve(string opCode)
+    public OperationBase? Resolve(string opCode)
     {
         return _instructions.TryGetValue(opCode, out var info) 
             ? info.Implementation 
