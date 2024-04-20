@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace RemoteLea.Core;
 
-public enum LogLevel { Info, Error }
+public enum LogLevel { Info, Warning, Error }
 
 /// <summary>
 /// A function that can log a message of a specified level
@@ -38,6 +38,15 @@ public static class LogUtils
             .Aggregate((x, y) => $"{x}, {y}");
 
         var message = $"Argument `{argumentName}` had an unsupported type of `{argumentType.Name}`. Valid types are: {validTypeString}";
+        logger(LogLevel.Error, operationName, message);
+    }
+
+    /// <summary>
+    /// Logs an error if a variable was referenced that does not exist
+    /// </summary>
+    public static void ReferencedVariableDoesntExist(this LogFunction logger, string operationName, string variableName)
+    {
+        var message = $"Variable with the name `{variableName}` was referenced but does not currently exist";
         logger(LogLevel.Error, operationName, message);
     }
 }
