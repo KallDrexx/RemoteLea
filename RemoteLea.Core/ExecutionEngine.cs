@@ -30,7 +30,7 @@ public class ExecutionEngine
     {
         _cancellationTokenSource = new CancellationTokenSource();
         var executionContext = new OperationExecutionContext(Variables, _outputs, _cancellationTokenSource.Token);
-        
+
         // TODO: Probably need a way to provide initial variables (e.g. an SPI bus that's already been created)
         // TODO: Add logging
         Variables.Clear();
@@ -40,6 +40,10 @@ public class ExecutionEngine
         using var enumerator = instructions.GetEnumerator();
         while (!_cancellationTokenSource.IsCancellationRequested)
         {
+            // In case no true asynchronous code has been called, allow other async tasks to execute.
+            // This  helps prevent infinite loops that can't ever be cancelled.
+            await Task.Yield();
+
             var instruction = enumerator.Current;
             if (instruction == null)
             {
@@ -61,11 +65,11 @@ public class ExecutionEngine
             {
                 _logFunction(level, instructionIndex, operation.GetType().Name, message);
             }
-            
+
             executionContext.Arguments = instruction.Arguments;
             executionContext.Log = LogFunction;
             var result = await operation.ExecuteAsync(executionContext);
-            
+
             if (!result.WasSuccessful)
             {
                 _logFunction(LogLevel.Error, instructionIndex, GetType().Name, "Instruction failed, stopping");
@@ -120,10 +124,10 @@ public class ExecutionEngine
         public IReadOnlyDictionary<string, object> Variables { get; }
         public Dictionary<string, object> Outputs { get; }
         public CancellationToken CancellationToken { get; }
-        
+
         public OperationExecutionContext(
-            IReadOnlyDictionary<string, object> variables, 
-            Dictionary<string, object> outputs, 
+            IReadOnlyDictionary<string, object> variables,
+            Dictionary<string, object> outputs,
             CancellationToken cancellationToken)
         {
             Variables = variables;

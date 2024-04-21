@@ -18,10 +18,68 @@ public class ExecutionEngineTests
             })
         });
 
-        await engine.Execute(set);
-
+        await engine.Execute(set).WaitAsync(TimeSpan.FromMilliseconds(100));
         var variables = engine.VariableData;
         variables.ShouldContainKey("test");
         variables["test"].ShouldBe(1234);
+    }
+
+    [Fact]
+    public async Task Multiple_Instructions()
+    {
+        var engine = new TestExecutionEngine();
+        var set = new InstructionSet(new List<Instruction>
+        {
+            new(SetValueOperation.OpCode, new Dictionary<string, IArgumentValue>
+            {
+                { SetValueOperation.ValueParam, new IntArgumentValue(10) },
+                { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("value") },
+            }),
+            new(AddOperation.OpCode, new Dictionary<string, IArgumentValue>
+            {
+                { AddOperation.ValueParam, new IntArgumentValue(5) },
+                { AddOperation.OutputParam, new VariableReferenceArgumentValue("value") },
+            })
+        });
+
+        await engine.Execute(set).WaitAsync(TimeSpan.FromMilliseconds(100));
+        var variables = engine.VariableData;
+        variables.ShouldContainKey("value");
+        variables["value"].ShouldBe(15);
+    }
+
+    [Fact]
+    public async Task Jump_Based_Looping()
+    {
+        var engine = new TestExecutionEngine();
+        var set = new InstructionSet(new List<Instruction>
+        {
+            new(SetValueOperation.OpCode, new Dictionary<string, IArgumentValue>
+            {
+                { SetValueOperation.ValueParam, new IntArgumentValue(0) },
+                { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("value") },
+            }),
+            new(SetValueOperation.OpCode, new Dictionary<string, IArgumentValue>
+            {
+                { SetValueOperation.ValueParam, new IntArgumentValue(15) },
+                { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("check") },
+            }),
+            new(AddOperation.OpCode, new Dictionary<string, IArgumentValue>
+            {
+                { AddOperation.ValueParam, new IntArgumentValue(1) },
+                { AddOperation.OutputParam, new VariableReferenceArgumentValue("value") },
+            }, "counter"),
+            new(JumpIfNotEqualOperation.OpCode, new Dictionary<string, IArgumentValue>
+            {
+                { JumpIfNotEqualOperation.FirstVar, new VariableReferenceArgumentValue("value") },
+                { JumpIfNotEqualOperation.SecondVar, new VariableReferenceArgumentValue("check") },
+                { JumpIfNotEqualOperation.LabelParam, new StringArgumentValue("counter") }
+            }),
+        });
+
+        await engine.Execute(set).WaitAsync(TimeSpan.FromMilliseconds(100));
+        var variables = engine.VariableData;
+        variables.ShouldContainKey("value");
+        variables["value"].ShouldBe(15);
     }
 }

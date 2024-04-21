@@ -16,9 +16,9 @@ public class JumpIfNotEqualOperation : OperationBase
 {
     public const string OpCode = "jne";
     
-    private const string FirstVar = nameof(Arguments.First);
-    private const string SecondVar = nameof(Arguments.Second);
-    private const string LabelParam = nameof(Arguments.Label);
+    public const string FirstVar = nameof(Arguments.First);
+    public const string SecondVar = nameof(Arguments.Second);
+    public const string LabelParam = nameof(Arguments.Label);
     
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
@@ -50,9 +50,9 @@ public class JumpIfNotEqualOperation : OperationBase
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success(parsedArgs.Label));
         }
 
-        return first != second 
-            ? new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success(parsedArgs.Label)) 
-            : new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());
+        return first.Equals(second)
+            ? new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success())
+            : new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success(parsedArgs.Label));
     }
 
     private class Arguments

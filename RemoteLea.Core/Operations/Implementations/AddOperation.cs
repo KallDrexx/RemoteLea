@@ -12,8 +12,8 @@ namespace RemoteLea.Core.Operations.Implementations;
 public class AddOperation : OperationBase
 {
     public const string OpCode = "add";
-    private const string ValueParam = "Value";
-    private const string OutputParam = nameof(Arguments.StorageVariable);
+    public const string ValueParam = "Value";
+    public const string OutputParam = nameof(Arguments.StorageVariable);
     private const ParameterType ValueType = ParameterType.Integer;
     private const ParameterType OutputType = ParameterType.VariableReference;
 

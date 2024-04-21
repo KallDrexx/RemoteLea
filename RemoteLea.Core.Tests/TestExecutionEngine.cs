@@ -5,7 +5,7 @@ namespace RemoteLea.Core.Tests;
 public class TestExecutionEngine : ExecutionEngine
 {
     public Dictionary<string, object> VariableData => Variables;
-    
+
     public TestExecutionEngine() : base(CreateOperationManager(), LogFunction)
     {
     }
@@ -31,6 +31,5 @@ public class TestExecutionEngine : ExecutionEngine
 
     private static void LogFunction(LogLevel level, int instructionIndex, string operationName, string message)
     {
-        
     }
 }
