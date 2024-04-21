@@ -8,7 +8,7 @@ public enum LogLevel { Info, Warning, Error }
 /// <summary>
 /// A function that can log a message of a specified level
 /// </summary>
-public delegate void LogFunction(LogLevel level, string operationName, string message);
+public delegate void LogFunction(LogLevel level, int instructionIndex, string operationName, string message);
 
 /// <summary>
 /// A function that logs a message scoped to a specific instruction

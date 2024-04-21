@@ -6,11 +6,12 @@ namespace RemoteLea.Core.Operations.Implementations;
 /// Operation that adds an integer to the specified variable. Supports negative numbers for
 /// subtraction.
 /// </summary>
-[Operation("Add")]
+[Operation(OpCode)]
 [OperationParameter(ValueParam, ValueType, "Value to add")]
 [OperationParameter(OutputParam, OutputType, "Variable to add the value to")]
 public class AddOperation : OperationBase
 {
+    public const string OpCode = "add";
     private const string ValueParam = "Value";
     private const string OutputParam = nameof(Arguments.StorageVariable);
     private const ParameterType ValueType = ParameterType.Integer;

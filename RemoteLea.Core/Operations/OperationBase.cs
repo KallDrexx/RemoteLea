@@ -71,11 +71,11 @@ public abstract class OperationBase
                     log.RequiredArgumentNotProvided(name);
                     return null;
                 }
-                
+
                 continue;
             }
 
-            if (property.PropertyType == typeof(int))
+            if (property.PropertyType == typeof(int) || property.PropertyType == typeof(int?))
             {
                 if (argumentValue is IntArgumentValue arg)
                 {
@@ -88,13 +88,13 @@ public abstract class OperationBase
                         log.IncorrectArgumentType(name, argumentValue.GetType(), ParameterType.Integer);
                         return null;
                     }
-                    
+
                     // Since it's not required, it's possible it's going to fill another property with a different
                     // type, so don't log it.
                     continue;
                 }
             }
-            else if (property.PropertyType == typeof(bool))
+            else if (property.PropertyType == typeof(bool) || property.PropertyType == typeof(bool?))
             {
                 if (argumentValue is BoolArgumentValue arg)
                 {
@@ -107,7 +107,7 @@ public abstract class OperationBase
                         log.IncorrectArgumentType(name, argumentValue.GetType(), ParameterType.Bool);
                         return null;
                     }
-                    
+
                     // Since it's not required, it's possible it's going to fill another property with a different
                     // type, so don't log it.
                     continue;
@@ -126,7 +126,7 @@ public abstract class OperationBase
                         log.IncorrectArgumentType(name, argumentValue.GetType(), ParameterType.String);
                         return null;
                     }
-                    
+
                     // Since it's not required, it's possible it's going to fill another property with a different
                     // type, so don't log it.
                     continue;
@@ -145,13 +145,14 @@ public abstract class OperationBase
                         log.IncorrectArgumentType(name, argumentValue.GetType(), ParameterType.ByteArray);
                         return null;
                     }
-                    
+
                     // Since it's not required, it's possible it's going to fill another property with a different
                     // type, so don't log it.
                     continue;
                 }
             }
-            else if (property.PropertyType == typeof(VariableReferenceArgumentValue))
+            else if (property.PropertyType == typeof(VariableReferenceArgumentValue) ||
+                     property.PropertyType == typeof(VariableReferenceArgumentValue?))
             {
                 if (argumentValue is VariableReferenceArgumentValue arg)
                 {
@@ -164,7 +165,7 @@ public abstract class OperationBase
                         log.IncorrectArgumentType(name, argumentValue.GetType(), ParameterType.VariableReference);
                         return null;
                     }
-                    
+
                     // Since it's not required, it's possible it's going to fill another property with a different
                     // type, so don't log it.
                     continue;

@@ -8,12 +8,14 @@ namespace RemoteLea.Core.Operations.Implementations;
 /// variables exist but are of different types, then they are counted as not equal and a warning is
 /// logged.
 /// </summary>
-[Operation("jne")]
+[Operation(OpCode)]
 [OperationParameter(FirstVar, ParameterType.VariableReference, "First variable for comparison")]
 [OperationParameter(SecondVar, ParameterType.VariableReference, "Second variable to compare")]
 [OperationParameter(LabelParam, ParameterType.String, "Label to jump to if variables are equal")]
 public class JumpIfNotEqualOperation : OperationBase
 {
+    public const string OpCode = "jne";
+    
     private const string FirstVar = nameof(Arguments.First);
     private const string SecondVar = nameof(Arguments.Second);
     private const string LabelParam = nameof(Arguments.Label);

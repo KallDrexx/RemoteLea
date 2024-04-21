@@ -26,8 +26,11 @@ public class ExecutionEngine
     /// <summary>
     /// Executes the provided instruction set. Only one execution should be active at any given time.
     /// </summary>
-    /// <param name="instructions"></param>
-    public async Task Execute(InstructionSet instructions)
+    /// <returns>
+    /// The final state of the variables at the end of the execution. Mostly for testing purposes. The dictionary
+    /// is not thread safe and should not be read when execution begins again.
+    /// </returns>
+    public async Task<IReadOnlyDictionary<string, object>> Execute(InstructionSet instructions)
     {
         _cancellationTokenSource = new CancellationTokenSource();
         var executionContext = new OperationExecutionContext(_variables, _outputs, _cancellationTokenSource.Token);
@@ -47,6 +50,7 @@ public class ExecutionEngine
                 break;
             }
 
+            var instructionIndex = enumerator.CurrentIndex;
             var operation = _operationManager.Resolve(instruction.OpCode);
             if (operation == null)
             {
@@ -59,7 +63,7 @@ public class ExecutionEngine
 
             void LogFunction(LogLevel level, string message)
             {
-                _logFunction(level, operation.GetType().Name, message);
+                _logFunction(level, instructionIndex, operation.GetType().Name, message);
             }
             
             executionContext.Arguments = instruction.Arguments;
@@ -68,25 +72,20 @@ public class ExecutionEngine
             
             if (!result.WasSuccessful)
             {
-                _logFunction(LogLevel.Error, GetType().Name, "Instruction failed, stopping");
+                _logFunction(LogLevel.Error, instructionIndex, GetType().Name, "Instruction failed, stopping");
                 break;
             }
 
-            // Any outputs mapped to a variable name in the instruction should be mapped
-            foreach (var (outputKey, variableName) in instruction.OutputVariableNames)
+            // Any outputs should be mapped to their variable names
+            foreach (var (variableName, value) in executionContext.Outputs)
             {
-                if (!_outputs.TryGetValue(outputKey, out var outputValue))
+                if (value == null)
                 {
-                    continue;
-                }
-
-                if (outputValue == null)
-                {
-                    _variables.Remove(outputKey);
+                    _variables.Remove(variableName);
                 }
                 else
                 {
-                    _variables[outputKey] = outputValue;
+                    _variables[variableName] = value;
                 }
             }
 
@@ -102,12 +101,22 @@ public class ExecutionEngine
 
         if (_cancellationTokenSource.IsCancellationRequested)
         {
-            _logFunction(LogLevel.Info, GetType().Name, "Execution cancelled");
+            _logFunction(LogLevel.Info, enumerator.CurrentIndex, GetType().Name, "Execution cancelled");
         }
 
         // TODO: We should have some way to track things that need to be "disposed". E.g. if an instruction
         // set creates a digital input, or adds an event to an interrupt, we should probably have some way
         // to remove it after the run so the instruction set can idempotently executed.
+
+        return _variables;
+    }
+
+    /// <summary>
+    /// Cancels an execution that's in progress
+    /// </summary>
+    public void CancelCurrentExecution()
+    {
+        _cancellationTokenSource.Cancel();
     }
 
     private class OperationExecutionContext : IOperationExecutionContext

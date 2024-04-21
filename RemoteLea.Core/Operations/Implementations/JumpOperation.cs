@@ -2,10 +2,12 @@
 
 namespace RemoteLea.Core.Operations.Implementations;
 
-[Operation("Jmp")]
+[Operation(OpCode)]
 [OperationParameter(LabelParam, ParameterType.String, "Label to jump to")]
 public class JumpOperation : OperationBase
 {
+    public const string OpCode = "jmp";
+    
     private const string LabelParam = nameof(Arguments.Label);
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
