@@ -13,7 +13,7 @@ public class ExecutionEngine
 {
     private readonly OperationManager _operationManager;
     private readonly LogFunction _logFunction;
-    private readonly Dictionary<string, object> _variables = new(StringComparer.OrdinalIgnoreCase);
+    protected readonly Dictionary<string, object> Variables = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, object> _outputs = new(StringComparer.OrdinalIgnoreCase);
     private CancellationTokenSource _cancellationTokenSource = new();
 
@@ -26,18 +26,14 @@ public class ExecutionEngine
     /// <summary>
     /// Executes the provided instruction set. Only one execution should be active at any given time.
     /// </summary>
-    /// <returns>
-    /// The final state of the variables at the end of the execution. Mostly for testing purposes. The dictionary
-    /// is not thread safe and should not be read when execution begins again.
-    /// </returns>
-    public async Task<IReadOnlyDictionary<string, object>> Execute(InstructionSet instructions)
+    public async Task Execute(InstructionSet instructions)
     {
         _cancellationTokenSource = new CancellationTokenSource();
-        var executionContext = new OperationExecutionContext(_variables, _outputs, _cancellationTokenSource.Token);
+        var executionContext = new OperationExecutionContext(Variables, _outputs, _cancellationTokenSource.Token);
         
         // TODO: Probably need a way to provide initial variables (e.g. an SPI bus that's already been created)
         // TODO: Add logging
-        _variables.Clear();
+        Variables.Clear();
 
         // We have to manage the instruction set enumerator ourselves to properly
         // move to labels.
@@ -81,11 +77,11 @@ public class ExecutionEngine
             {
                 if (value == null)
                 {
-                    _variables.Remove(variableName);
+                    Variables.Remove(variableName);
                 }
                 else
                 {
-                    _variables[variableName] = value;
+                    Variables[variableName] = value;
                 }
             }
 
@@ -107,8 +103,6 @@ public class ExecutionEngine
         // TODO: We should have some way to track things that need to be "disposed". E.g. if an instruction
         // set creates a digital input, or adds an event to an interrupt, we should probably have some way
         // to remove it after the run so the instruction set can idempotently executed.
-
-        return _variables;
     }
 
     /// <summary>
