@@ -41,7 +41,7 @@ public class ExecutionEngine
         while (!_cancellationTokenSource.IsCancellationRequested)
         {
             // In case no true asynchronous code has been called, allow other async tasks to execute.
-            // This  helps prevent infinite loops that can't ever be cancelled.
+            // This helps prevent infinite loops that can't ever be cancelled.
             await Task.Yield();
 
             var instruction = enumerator.Current;

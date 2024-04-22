@@ -7,8 +7,7 @@ namespace RemoteLea.Core.Operations.Implementations;
 public class JumpOperation : OperationBase
 {
     public const string OpCode = "jmp";
-    
-    private const string LabelParam = nameof(Arguments.Label);
+    public const string LabelParam = nameof(Arguments.Label);
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {

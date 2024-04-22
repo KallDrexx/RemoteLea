@@ -82,4 +82,30 @@ public class ExecutionEngineTests
         variables.ShouldContainKey("value");
         variables["value"].ShouldBe(15);
     }
+
+    [Fact]
+    public async Task Can_Cancel_Infinite_Loop()
+    {
+        var engine = new TestExecutionEngine();
+        var set = new InstructionSet(new List<Instruction>
+        {
+            new(SetValueOperation.OpCode, new Dictionary<string, IArgumentValue>
+            {
+                { SetValueOperation.ValueParam, new IntArgumentValue(0) },
+                { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("value") },
+            }, "label"),
+            new(JumpOperation.OpCode, new Dictionary<string, IArgumentValue>
+            {
+                { JumpOperation.LabelParam, new StringArgumentValue("label") },
+            })
+        });
+
+        var executionTask = engine.Execute(set);
+        await Task.Delay(100);
+        executionTask.IsCompleted.ShouldBeFalse("Engine should still be looping");
+        
+        engine.CancelCurrentExecution();
+        await Task.Delay(10);
+        executionTask.IsCompleted.ShouldBeTrue("Engine execution should have been stopped");
+    }
 }

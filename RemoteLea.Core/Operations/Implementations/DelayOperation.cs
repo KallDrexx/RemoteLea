@@ -7,8 +7,7 @@ namespace RemoteLea.Core.Operations.Implementations;
 public class DelayOperation : OperationBase
 {
     public const string OpCode = "dly";
-    
-    private const string TimeParam = nameof(Arguments.Milliseconds);
+    public const string TimeParam = nameof(Arguments.Milliseconds);
 
     protected override async ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
