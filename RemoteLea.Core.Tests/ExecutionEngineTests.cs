@@ -97,7 +97,7 @@ public class ExecutionEngineTests
             new(JumpOperation.OpCode, new Dictionary<string, IArgumentValue>
             {
                 { JumpOperation.LabelParam, new StringArgumentValue("label") },
-            })
+            }),
         });
 
         var executionTask = engine.Execute(set);
