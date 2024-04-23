@@ -4,6 +4,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Core", "RemoteLea
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Core.Tests", "RemoteLea.Core.Tests\RemoteLea.Core.Tests.csproj", "{D6277DB0-B9F0-4534-939C-DC13815C5FA2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Serialization.AsmStyle", "RemoteLea.Serialization.AsmStyle\RemoteLea.Serialization.AsmStyle.csproj", "{772794A9-6641-485A-A676-CBC8D7852F3F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +20,9 @@ Global
 		{D6277DB0-B9F0-4534-939C-DC13815C5FA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D6277DB0-B9F0-4534-939C-DC13815C5FA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D6277DB0-B9F0-4534-939C-DC13815C5FA2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{772794A9-6641-485A-A676-CBC8D7852F3F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{772794A9-6641-485A-A676-CBC8D7852F3F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{772794A9-6641-485A-A676-CBC8D7852F3F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{772794A9-6641-485A-A676-CBC8D7852F3F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
