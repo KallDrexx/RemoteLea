@@ -3,7 +3,7 @@
 namespace RemoteLea.Core.Operations.Implementations;
 
 [Operation(OpCode)]
-[OperationParameter(LabelParam, ParameterType.String, "Label to jump to")]
+[OperationParameter(0, LabelParam, ParameterType.String, "Label to jump to")]
 public class JumpOperation : OperationBase
 {
     public const string OpCode = "jmp";

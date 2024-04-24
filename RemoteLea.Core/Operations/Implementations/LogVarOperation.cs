@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 namespace RemoteLea.Core.Operations.Implementations;
 
 [Operation(OpCode)]
-[OperationParameter(VariableParam, ParameterType.VariableReference, "Variable to log the value of")]
+[OperationParameter(0, VariableParam, ParameterType.VariableReference, "Variable to log the value of")]
 public class LogVarOperation : OperationBase
 {
     public const string OpCode = "logvar";

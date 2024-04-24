@@ -7,8 +7,8 @@ namespace RemoteLea.Core.Operations.Implementations;
 /// subtraction.
 /// </summary>
 [Operation(OpCode)]
-[OperationParameter(ValueParam, ValueType, "Value to add")]
-[OperationParameter(OutputParam, OutputType, "Variable to add the value to")]
+[OperationParameter(0, ValueParam, ValueType, "Value to add")]
+[OperationParameter(1, OutputParam, OutputType, "Variable to add the value to")]
 public class AddOperation : OperationBase
 {
     public const string OpCode = "add";

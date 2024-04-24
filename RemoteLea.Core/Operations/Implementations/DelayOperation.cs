@@ -3,7 +3,7 @@
 namespace RemoteLea.Core.Operations.Implementations;
 
 [Operation(OpCode)]
-[OperationParameter(TimeParam, ParameterType.Integer, "Number of milliseconds to wait for")]
+[OperationParameter(0, TimeParam, ParameterType.Integer, "Number of milliseconds to wait for")]
 public class DelayOperation : OperationBase
 {
     public const string OpCode = "dly";

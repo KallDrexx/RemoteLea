@@ -9,9 +9,9 @@ namespace RemoteLea.Core.Operations.Implementations;
 /// logged.
 /// </summary>
 [Operation(OpCode)]
-[OperationParameter(FirstVar, ParameterType.VariableReference, "First variable for comparison")]
-[OperationParameter(SecondVar, ParameterType.VariableReference, "Second variable to compare")]
-[OperationParameter(LabelParam, ParameterType.String, "Label to jump to if variables are equal")]
+[OperationParameter(0, FirstVar, ParameterType.VariableReference, "First variable for comparison")]
+[OperationParameter(1, SecondVar, ParameterType.VariableReference, "Second variable to compare")]
+[OperationParameter(2, LabelParam, ParameterType.String, "Label to jump to if variables are equal")]
 public class JumpIfEqualOperation : OperationBase
 {
     public const string OpCode = "jeq";

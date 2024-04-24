@@ -9,7 +9,7 @@ namespace RemoteLea.Core.Operations;
 /// <summary>
 /// Defines a parameter that can be given to an operation
 /// </summary>
-public record OperationParameter(string Name, ParameterType ValidTypes, string Description);
+public record OperationParameter(int Order, string Name, ParameterType ValidTypes, string Description);
 
 /// <summary>
 /// Defines a specific operation that's been implemented
@@ -36,7 +36,7 @@ public abstract class OperationBase
         var parameters = GetType().GetCustomAttributes<OperationParameterAttribute>();
         Definition = new OperationDefinition(
             operationAttr.OpCode,
-            parameters.Select(x => new OperationParameter(x.Name, x.ValidTypes, x.Description)).ToArray());
+            parameters.Select(x => new OperationParameter(x.Order, x.Name, x.ValidTypes, x.Description)).ToArray());
     }
 
     /// <summary>
