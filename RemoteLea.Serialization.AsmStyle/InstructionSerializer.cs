@@ -24,8 +24,6 @@ namespace RemoteLea.Serialization.AsmStyle;
 /// </summary>
 public class InstructionSerializer
 {
-    private readonly record struct ParsedLine(string? Label, string OpCode, string[] Arguments);
-
     private readonly OperationManager _operationManager;
 
     public InstructionSerializer(OperationManager operationManager)
@@ -33,129 +31,272 @@ public class InstructionSerializer
         _operationManager = operationManager;
     }
 
-    public List<Instruction> Deserialize(string content)
+    public InstructionSet Deserialize(string content)
     {
-        var memoryContent = content.AsMemory();
+        var instructions = new List<Instruction>();
+        var spanContent = content.AsSpan();
         var lineNumber = 0;
         while (true)
         {
-            var (parsedLine, index) = ParseLine(memoryContent, lineNumber);
-            if (parsedLine != null)
+            var (instruction, nextLineStartIndex) = ParseInstructionLine(spanContent, lineNumber);
+            if (instruction != null)
             {
-                
+                instructions.Add(instruction);
             }
 
-            if (memoryContent.Length <= index)
+            if (nextLineStartIndex >= spanContent.Length)
             {
                 break;
             }
 
-            memoryContent = memoryContent.Slice(index);
+            spanContent = spanContent.Slice(nextLineStartIndex);
         }
+
+        return new InstructionSet(instructions);
     }
 
-    private (ParsedLine?, int nextLineStartIndex) ParseLine(ReadOnlyMemory<char> lineContent, int lineNumber)
+    private static string GetParameterValidTypeString(OperationParameter parameter)
     {
-        var strings = new List<ReadOnlyMemory<char>>();
-        var colonEncountered = false;
+        return Enum.GetValues(typeof(ParameterType))
+            .Cast<Enum>()
+            .Where(parameter.ValidTypes.HasFlag)
+            .Select(x => x.ToString())
+            .Aggregate((x, y) => $"{x}, {y}");
+    }
 
-        var span = lineContent.Span;
-        var index = 0;
-        var inComment = false;
-        var newLineEncountered = false;
-        while (index < lineContent.Length)
+    private (Instruction?, int nextLineStartIndex) ParseInstructionLine(ReadOnlySpan<char> lineContent, int lineNumber)
+    {
+        var label = (string?)null;
+        string? opCode;
+
+        // Get first token
+        var (tokenStart, tokenEnd) = GetNextTokenIndexes(lineContent, 0);
+        if (tokenStart == null)
         {
-            if (newLineEncountered)
+            // Empty line
+            return (null, tokenEnd);
+        }
+
+        if (lineContent[tokenEnd] == ':')
+        {
+            label = lineContent[tokenStart.Value..tokenEnd].ToString();
+
+            // Next token should be the opcode
+            (tokenStart, tokenEnd) = GetNextTokenIndexes(lineContent, tokenEnd + 1);
+            if (tokenStart == null)
             {
+                var message = "Label without opcode encountered. All labels must be attached to an instruction";
+                throw new InstructionDeserializationException(lineNumber, 0, message);
+            }
+
+            opCode = lineContent[tokenStart.Value..tokenEnd].ToString();
+        }
+        else
+        {
+            // No colon means this is an opcode
+            opCode = lineContent[tokenStart.Value..tokenEnd].ToString();
+        }
+
+        var definition = _operationManager.Resolve(opCode)?.Definition;
+        if (definition == null)
+        {
+            var message = $"Unknown opcode '{opCode}'";
+            throw new InstructionDeserializationException(lineNumber, tokenStart.Value, message);
+        }
+
+        var orderedParameters = definition.Parameters.OrderBy(x => x.Order).ToArray();
+        var arguments = new Dictionary<string, IArgumentValue>();
+        var argumentIndex = -1;
+        while (true)
+        {
+            argumentIndex++;
+
+            (tokenStart, tokenEnd) = GetNextTokenIndexes(lineContent, tokenEnd + 1);
+            if (tokenStart == null)
+            {
+                // No more tokens in this line
                 break;
             }
-            
-            switch (span[index])
+
+            if (argumentIndex >= orderedParameters.Length)
             {
-                case ' ':
-                    break;
-
-                case '#':
-                    inComment = true;
-                    break;
-
-                case '"':
-                    if (!inComment)
-                    {
-                        var (startIndex, endIndex) = ParseQuote(span, index, lineNumber);
-                        strings.Add(lineContent.Slice(startIndex, endIndex));
-                    }
-
-                    break;
-                
-                case '\n':
-                    newLineEncountered = true;
-                    break;
-                
-                case ':':
-                    if (!inComment)
-                    {
-                        if (colonEncountered)
-                        {
-                            const string message = "Multiple colons encountered, only one after the label is allowed";
-                            throw new InstructionDeserializationException(lineNumber, index, message);
-                        }
-
-                        colonEncountered = true;
-                    }
-
-                    break;
+                var message = $"Argument #{argumentIndex} does not match any parameters for {opCode}";
+                throw new InstructionDeserializationException(lineNumber, tokenStart.Value, message);
             }
 
-            index++;
+            var parameter = orderedParameters[argumentIndex];
+            ParseArgument(lineContent, lineNumber, tokenStart.Value, tokenEnd, parameter, arguments);
         }
 
-        if (strings.Count == 0)
-        {
-            return (null, index);
-        }
-
-        if (colonEncountered && strings.Count == 1)
-        {
-            const string message = "Label with no op code encountered";
-            throw new InstructionDeserializationException(lineNumber, 0, message);
-        }
-
-        var skipCount = colonEncountered ? 2 : 1;
-        var arguments = strings.Skip(skipCount).Select(x => x.ToString()).ToArray();
-        var parsedLine = new ParsedLine(
-            colonEncountered ? strings[0].ToString() : null,
-            colonEncountered ? strings[1].ToString() : strings[0].ToString(),
-            arguments);
-
-        return (parsedLine, index);
+        var instruction = new Instruction(opCode, arguments, label);
+        return (instruction, tokenEnd + 1);
     }
 
-    private (int, int) ParseQuote(ReadOnlySpan<char> lineContent, int startIndex, int lineNum)
+    private static void ParseArgument(
+        ReadOnlySpan<char> lineContent,
+        int lineNumber,
+        int tokenStart,
+        int tokenEnd,
+        OperationParameter parameter,
+        Dictionary<string, IArgumentValue> arguments)
     {
-        // Find an ending quote that's not preceded by a `\`
-        var index = startIndex;
-        var isEscaped = false;
-
-        while (index < lineContent.Length)
+        var tokenSlice = lineContent.Slice(tokenStart, tokenEnd - tokenStart + 1);
+        if (tokenSlice[0] == '$')
         {
-            index++;
-            switch (lineContent[index])
+            if (!parameter.ValidTypes.HasFlag(ParameterType.VariableReference))
             {
-                case '\'':
-                    isEscaped = true;
+                var message = $"Argument is a variable reference, but that parameter " +
+                              $"does not take that. Valid types are: {GetParameterValidTypeString(parameter)}";
+                throw new InstructionDeserializationException(lineNumber, tokenStart, message);
+            }
+
+            if (tokenSlice.Length == 1)
+            {
+                var message = "Argument is a no-named variable reference";
+                throw new InstructionDeserializationException(lineNumber, tokenStart, message);
+            }
+
+            var name = tokenSlice.Slice(1).ToString();
+            arguments.Add(parameter.Name, new VariableReferenceArgumentValue(name));
+            return;
+        }
+
+        var isAllDigits = true;
+        foreach (var character in tokenSlice)
+        {
+            if (!char.IsDigit(character))
+            {
+                isAllDigits = false;
+                break;
+            }
+        }
+
+        if (isAllDigits && parameter.ValidTypes.HasFlag(ParameterType.Integer))
+        {
+            var value = Convert.ToInt32(tokenSlice.ToString());
+            arguments.Add(parameter.Name, new IntArgumentValue(value));
+            return;
+        }
+
+        if (parameter.ValidTypes.HasFlag(ParameterType.Bool))
+        {
+            if (tokenSlice.Equals("true", StringComparison.OrdinalIgnoreCase))
+            {
+                arguments.Add(parameter.Name, new BoolArgumentValue(true));
+                return;
+            }
+
+            if (tokenSlice.Equals("false", StringComparison.OrdinalIgnoreCase))
+            {
+                arguments.Add(parameter.Name, new BoolArgumentValue(false));
+                return;
+            }
+        }
+
+        if (tokenSlice.StartsWith("0x") &&
+            tokenSlice.Length > 2 &&
+            parameter.ValidTypes.HasFlag(ParameterType.ByteArray))
+        {
+            // Convert from a hex string to byte array
+            tokenSlice = tokenSlice.Slice(2);
+            if (tokenSlice.Length % 2 != 0)
+            {
+                var message = "Byte array argument has an odd number of hex characters";
+                throw new InstructionDeserializationException(lineNumber, tokenStart, message);
+            }
+
+            var byteArray = new byte[tokenSlice.Length / 2];
+            for (var x = 0; x < tokenSlice.Length; x += 2)
+            {
+                if (!byte.TryParse(tokenSlice.Slice(x, 2), out var value))
+                {
+                    var message = "Invalid hex value in byte array";
+                    throw new InstructionDeserializationException(lineNumber, tokenStart + 2 + x, message);
+                }
+
+                byteArray[x / 2] = value;
+            }
+
+            arguments.Add(parameter.Name, new ByteArrayArgumentValue(byteArray));
+            return;
+        }
+
+        // Otherwise treat it as a string
+        if (!parameter.ValidTypes.HasFlag(ParameterType.String))
+        {
+            var message = $"String value not allowed for '{parameter.Name}' parameter";
+            throw new InstructionDeserializationException(lineNumber, tokenStart, message);
+        }
+
+        if (tokenSlice.StartsWith("\"") && tokenSlice.EndsWith("\"") && tokenSlice.Length >= 3)
+        {
+            tokenSlice = tokenSlice.Slice(1, tokenSlice.Length - 2);
+        }
+
+        arguments.Add(parameter.Name, new StringArgumentValue(tokenSlice.ToString()));
+    }
+
+    private static (int? start, int end) GetNextTokenIndexes(ReadOnlySpan<char> lineContent, int startIndex)
+    {
+        var tokenStart = (int?)null;
+        var isQuoted = false;
+        var escapeCharEncountered = false;
+
+        for (var index = startIndex; index < lineContent.Length; index++)
+        {
+            if (lineContent[index] == '\n')
+            {
+                if (tokenStart == null)
+                {
+                    return (null, index); // no next token
+                }
+
+                // otherwise the last token was the one before the newline
+                return (tokenStart.Value, index - 1);
+            }
+
+            if (char.IsWhiteSpace(lineContent[index]) && !isQuoted)
+            {
+                if (tokenStart == null)
+                {
                     continue;
+                }
 
-                case '"':
-                    if (!isEscaped)
-                    {
-                        return (startIndex, index);
-                    }
+                // Otherwise we hit the next space after the last token character
+                return (tokenStart.Value, index - 1);
+            }
 
-                    break;
+            // A non-white space character hit
+            if (tokenStart == null)
+            {
+                tokenStart = index;
+                if (lineContent[index] == '"')
+                {
+                    isQuoted = true;
+                }
+
+                continue;
+            }
+
+            // Escape characters only valid in quoted strings
+            if (isQuoted && lineContent[index] == '\\' && !escapeCharEncountered)
+            {
+                escapeCharEncountered = true;
+                continue;
+            }
+
+            if (lineContent[index] == '"' && !escapeCharEncountered)
+            {
+                // This is the end of the quoted string
+                return (tokenStart.Value, index);
+            }
+
+            if (escapeCharEncountered)
+            {
+                escapeCharEncountered = false;
             }
         }
 
-        throw new InstructionDeserializationException(lineNum, startIndex, "Quoted string has no ending quote");
+        return (tokenStart, lineContent.Length - 1);
     }
 }
