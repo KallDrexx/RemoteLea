@@ -2,7 +2,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Core", "RemoteLea.Core\RemoteLea.Core.csproj", "{3E2301D1-CC62-44D1-B330-8232ED4C40EF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Core.Tests", "RemoteLea.Core.Tests\RemoteLea.Core.Tests.csproj", "{D6277DB0-B9F0-4534-939C-DC13815C5FA2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Tests", "RemoteLea.Tests\RemoteLea.Tests.csproj", "{D6277DB0-B9F0-4534-939C-DC13815C5FA2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Serialization.AsmStyle", "RemoteLea.Serialization.AsmStyle\RemoteLea.Serialization.AsmStyle.csproj", "{772794A9-6641-485A-A676-CBC8D7852F3F}"
 EndProject

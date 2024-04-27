@@ -1,7 +1,8 @@
-﻿using RemoteLea.Core.Operations.Implementations;
+﻿using RemoteLea.Core;
+using RemoteLea.Core.Operations.Implementations;
 using Shouldly;
 
-namespace RemoteLea.Core.Tests;
+namespace RemoteLea.Tests.Core;
 
 public class ExecutionEngineTests
 {

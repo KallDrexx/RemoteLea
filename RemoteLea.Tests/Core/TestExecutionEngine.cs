@@ -1,6 +1,7 @@
-﻿using RemoteLea.Core.Operations;
+﻿using RemoteLea.Core;
+using RemoteLea.Core.Operations;
 
-namespace RemoteLea.Core.Tests;
+namespace RemoteLea.Tests.Core;
 
 public class TestExecutionEngine : ExecutionEngine
 {
