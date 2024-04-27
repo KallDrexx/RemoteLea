@@ -50,6 +50,7 @@ public class InstructionSerializer
             }
 
             spanContent = spanContent.Slice(nextLineStartIndex);
+            lineNumber++;
         }
 
         return new InstructionSet(instructions);
@@ -89,12 +90,12 @@ public class InstructionSerializer
                 throw new InstructionDeserializationException(lineNumber, 0, message);
             }
 
-            opCode = lineContent[tokenStart.Value..tokenEnd].ToString();
+            opCode = lineContent[tokenStart.Value..(tokenEnd+1)].ToString();
         }
         else
         {
             // No colon means this is an opcode
-            opCode = lineContent[tokenStart.Value..tokenEnd].ToString();
+            opCode = lineContent[tokenStart.Value..(tokenEnd+1)].ToString();
         }
 
         var definition = _operationManager.Resolve(opCode)?.Definition;

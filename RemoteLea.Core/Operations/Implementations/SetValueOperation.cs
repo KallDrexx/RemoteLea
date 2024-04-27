@@ -7,8 +7,8 @@ namespace RemoteLea.Core.Operations.Implementations;
 /// Operation that allows setting a variable to a specified value
 /// </summary>
 [Operation(OpCode)]
-[OperationParameter(0, ValueParam, ValueTypes, "Value to set the variable to")]
-[OperationParameter(1, VariableOutput, OutputTypes, "Variable to set the value for")]
+[OperationParameter(0, VariableOutput, OutputTypes, "Variable to set the value for")]
+[OperationParameter(1, ValueParam, ValueTypes, "Value to set the variable to")]
 public class SetValueOperation : OperationBase
 {
     public const string OpCode = "set";

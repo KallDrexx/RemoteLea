@@ -104,7 +104,7 @@ public class ExecutionEngineTests
         var executionTask = engine.Execute(set);
         await Task.Delay(100);
         executionTask.IsCompleted.ShouldBeFalse("Engine should still be looping");
-        
+
         engine.CancelCurrentExecution();
         await Task.Delay(10);
         executionTask.IsCompleted.ShouldBeTrue("Engine execution should have been stopped");

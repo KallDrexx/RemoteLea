@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace RemoteLea.Core;
 
@@ -11,6 +12,8 @@ public class InstructionSet
 {
     private readonly List<Instruction> _instructions;
     private readonly Dictionary<string, int> _labelIndices = new(StringComparer.OrdinalIgnoreCase);
+
+    public int Count => _instructions.Count;
 
     public InstructionSet(List<Instruction> instructions)
     {
@@ -45,6 +48,7 @@ public class InstructionSet
     {
         private readonly InstructionSet _instructionSet;
         private int _currentIndex;
+        private bool _hasStarted = false;
 
         public Instruction? Current { get; set; }
         public int CurrentIndex => _currentIndex;
@@ -59,7 +63,15 @@ public class InstructionSet
         
         public bool MoveNext()
         {
-            _currentIndex++;
+            if (!_hasStarted)
+            {
+                _hasStarted = true;
+            }
+            else
+            {
+                _currentIndex++;
+            }
+            
             SetCurrent();
 
             return Current != null;
@@ -79,12 +91,14 @@ public class InstructionSet
             }
             
             _currentIndex = index;
+            _hasStarted = true;
             SetCurrent();
             return true;
         }
 
         public void Reset()
         {
+            _hasStarted = false;
             _currentIndex = 0;
             SetCurrent();
         }
@@ -95,9 +109,14 @@ public class InstructionSet
 
         private void SetCurrent()
         {
-            Current = _currentIndex < _instructionSet._instructions.Count
-                ? _instructionSet._instructions[_currentIndex]
-                : null;
+            if (!_hasStarted || _currentIndex >= _instructionSet._instructions.Count)
+            {
+                Current = null;
+            }
+            else
+            {
+                Current = _instructionSet._instructions[_currentIndex];
+            }
         }
     }
 }

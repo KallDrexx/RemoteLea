@@ -23,6 +23,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\RemoteLea.Core\RemoteLea.Core.csproj" />
+      <ProjectReference Include="..\RemoteLea.Serialization.AsmStyle\RemoteLea.Serialization.AsmStyle.csproj" />
     </ItemGroup>
 
 </Project>

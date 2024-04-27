@@ -38,6 +38,8 @@ public class ExecutionEngine
         // We have to manage the instruction set enumerator ourselves to properly
         // move to labels.
         using var enumerator = instructions.GetEnumerator();
+        enumerator.MoveNext();
+        
         while (!_cancellationTokenSource.IsCancellationRequested)
         {
             // In case no true asynchronous code has been called, allow other async tasks to execute.
