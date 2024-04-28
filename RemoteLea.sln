@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Serialization.Asm
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Meadow", "RemoteLea.Meadow\RemoteLea.Meadow.csproj", "{48FDDB3C-B158-4460-9E17-DA57E94DFC3C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Meadow.Desktop", "RemoteLea.Meadow.Desktop\RemoteLea.Meadow.Desktop.csproj", "{1DB3DB4D-0B77-4469-A4B5-B5FFCD752536}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{48FDDB3C-B158-4460-9E17-DA57E94DFC3C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{48FDDB3C-B158-4460-9E17-DA57E94DFC3C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{48FDDB3C-B158-4460-9E17-DA57E94DFC3C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DB3DB4D-0B77-4469-A4B5-B5FFCD752536}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DB3DB4D-0B77-4469-A4B5-B5FFCD752536}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DB3DB4D-0B77-4469-A4B5-B5FFCD752536}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DB3DB4D-0B77-4469-A4B5-B5FFCD752536}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
