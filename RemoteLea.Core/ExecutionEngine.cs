@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using RemoteLea.Core.Operations;
@@ -31,9 +32,7 @@ public class ExecutionEngine
         _cancellationTokenSource = new CancellationTokenSource();
         var executionContext = new OperationExecutionContext(Variables, _outputs, _cancellationTokenSource.Token);
 
-        // TODO: Probably need a way to provide initial variables (e.g. an SPI bus that's already been created)
-        // TODO: Add logging
-        Variables.Clear();
+        ClearVariables();
 
         // We have to manage the instruction set enumerator ourselves to properly
         // move to labels.
@@ -105,10 +104,6 @@ public class ExecutionEngine
         {
             _logFunction(LogLevel.Info, enumerator.CurrentIndex, GetType().Name, "Execution cancelled");
         }
-
-        // TODO: We should have some way to track things that need to be "disposed". E.g. if an instruction
-        // set creates a digital input, or adds an event to an interrupt, we should probably have some way
-        // to remove it after the run so the instruction set can idempotently executed.
     }
 
     /// <summary>
@@ -118,6 +113,18 @@ public class ExecutionEngine
     {
         _cancellationTokenSource.Cancel();
     }
+
+    private void ClearVariables()
+    {
+        // Dispose any disposable variables
+        foreach (var disposable in Variables.Values.OfType<IDisposable>())
+        {
+            disposable.Dispose();
+        }
+        
+        Variables.Clear();
+    }
+
 
     private class OperationExecutionContext : IOperationExecutionContext
     {
