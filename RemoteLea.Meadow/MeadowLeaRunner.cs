@@ -9,7 +9,7 @@ namespace RemoteLea.Meadow;
 
 public class MeadowLeaRunner
 {
-    public MeadowLeaRunner(IReadOnlyList<OperationBase> operations)
+    public MeadowLeaRunner(IEnumerable<OperationBase> operations)
     {
         var manager = new OperationManager();
         foreach (var operation in operations)

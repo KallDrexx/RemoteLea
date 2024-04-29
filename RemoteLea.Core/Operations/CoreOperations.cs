@@ -1,16 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
+using RemoteLea.Core.Operations.Implementations;
 
 namespace RemoteLea.Core.Operations;
 
 public static class CoreOperations
 {
-    public static IReadOnlyList<OperationBase> All => typeof(OperationBase).Assembly
-        .GetTypes()
-        .Where(x => !x.IsAbstract)
-        .Where(x => typeof(OperationBase).IsAssignableFrom(x))
-        .Select(Activator.CreateInstance)
-        .Cast<OperationBase>()
-        .ToArray();
+    public static IEnumerable<OperationBase> All()
+    {
+        yield return new AddOperation();
+        yield return new DelayOperation();
+        yield return new JumpOperation();
+        yield return new JumpIfEqualOperation();
+        yield return new JumpIfNotEqualOperation();
+        yield return new LogVarOperation();
+        yield return new SetValueOperation();
+    }
 }

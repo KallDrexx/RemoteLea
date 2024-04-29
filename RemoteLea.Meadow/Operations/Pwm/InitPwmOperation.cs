@@ -63,7 +63,7 @@ public class InitPwmOperation : OperationBase
 
     private class Arguments
     {
-        public string PinName { get; set; }
+        public string PinName { get; set; } = null!;
         public int Frequency { get; set; }
         public VariableReferenceArgumentValue Variable { get; set; }
     }

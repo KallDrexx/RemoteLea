@@ -10,8 +10,7 @@ public class MeadowApp : App<global::Meadow.Desktop>
     
     public override Task Initialize()
     {
-        var operations = CoreOperations.All;
-        _meadowLeaRunner = new MeadowLeaRunner(operations);
+        _meadowLeaRunner = new MeadowLeaRunner(CoreOperations.All());
 
         return Task.CompletedTask;
     }
