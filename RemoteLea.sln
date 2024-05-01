@@ -12,6 +12,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Meadow.Desktop", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Meadow.F7Feather", "RemoteLea.Meadow.F7Feather\RemoteLea.Meadow.F7Feather.csproj", "{C2DCF64E-073B-4E52-9817-36657B895D36}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RemoteLea.Meadow.ProjectLab", "RemoteLea.Meadow.ProjectLab\RemoteLea.Meadow.ProjectLab.csproj", "{28E11770-849E-4B97-9CBD-70862ADA25BE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -42,5 +44,9 @@ Global
 		{C2DCF64E-073B-4E52-9817-36657B895D36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C2DCF64E-073B-4E52-9817-36657B895D36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C2DCF64E-073B-4E52-9817-36657B895D36}.Release|Any CPU.Build.0 = Release|Any CPU
+		{28E11770-849E-4B97-9CBD-70862ADA25BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{28E11770-849E-4B97-9CBD-70862ADA25BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{28E11770-849E-4B97-9CBD-70862ADA25BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{28E11770-849E-4B97-9CBD-70862ADA25BE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

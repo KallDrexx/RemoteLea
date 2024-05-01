@@ -34,75 +34,89 @@ public class ExecutionEngine
 
         ClearVariables();
 
-        // We have to manage the instruction set enumerator ourselves to properly
-        // move to labels.
-        using var enumerator = instructions.GetEnumerator();
-        enumerator.MoveNext();
-        
-        while (!_cancellationTokenSource.IsCancellationRequested)
+        try
         {
-            // In case no true asynchronous code has been called, allow other async tasks to execute.
-            // This helps prevent infinite loops that can't ever be cancelled.
-            await Task.Yield();
+            // We have to manage the instruction set enumerator ourselves to properly
+            // move to labels.
+            using var enumerator = instructions.GetEnumerator();
+            enumerator.MoveNext();
 
-            var instruction = enumerator.Current;
-            if (instruction == null)
+            while (!_cancellationTokenSource.IsCancellationRequested)
             {
-                break;
-            }
+                // In case no true asynchronous code has been called, allow other async tasks to execute.
+                // This helps prevent infinite loops that can't ever be cancelled.
+                await Task.Yield();
 
-            var instructionIndex = enumerator.CurrentIndex;
-            var operation = _operationManager.Resolve(instruction.OpCode);
-            if (operation == null)
-            {
-                // TODO: Better error handling
-                var message = $"Unknown op code {instruction.OpCode}";
-                throw new InvalidOperationException(message);
-            }
-
-            _outputs.Clear();
-
-            void LogFunction(LogLevel level, string message)
-            {
-                _logFunction(level, instructionIndex, operation.GetType().Name, message);
-            }
-
-            executionContext.Arguments = instruction.Arguments;
-            executionContext.Log = LogFunction;
-            var result = await operation.ExecuteAsync(executionContext);
-
-            if (!result.WasSuccessful)
-            {
-                _logFunction(LogLevel.Error, instructionIndex, GetType().Name, "Instruction failed, stopping");
-                break;
-            }
-
-            // Any outputs should be mapped to their variable names
-            foreach (var (variableName, value) in executionContext.Outputs)
-            {
-                if (value == null)
+                var instruction = enumerator.Current;
+                if (instruction == null)
                 {
-                    Variables.Remove(variableName);
+                    break;
+                }
+
+                var instructionIndex = enumerator.CurrentIndex;
+                _logFunction(LogLevel.Debug, instructionIndex, GetType().Name,
+                    $"Executing instruction {instruction.OpCode}");
+
+                var operation = _operationManager.Resolve(instruction.OpCode);
+                if (operation == null)
+                {
+                    // TODO: Better error handling
+                    var message = $"Unknown op code '{instruction.OpCode}'";
+                    throw new InvalidOperationException(message);
+                }
+
+                _outputs.Clear();
+
+                void LogFunction(LogLevel level, string message)
+                {
+                    _logFunction(level, instructionIndex, operation.GetType().Name, message);
+                }
+
+                executionContext.Arguments = instruction.Arguments;
+                executionContext.Log = LogFunction;
+                var result = await operation.ExecuteAsync(executionContext);
+
+                if (!result.WasSuccessful)
+                {
+                    _logFunction(LogLevel.Error, instructionIndex, GetType().Name, "Instruction failed, stopping");
+                    break;
+                }
+
+                // Any outputs should be mapped to their variable names
+                foreach (var (variableName, value) in executionContext.Outputs)
+                {
+                    if (value == null)
+                    {
+                        Variables.Remove(variableName);
+                    }
+                    else
+                    {
+                        Variables[variableName] = value;
+                    }
+                }
+
+                if (result.JumpToLabel != null)
+                {
+                    enumerator.MoveToLabel(result.JumpToLabel);
                 }
                 else
                 {
-                    Variables[variableName] = value;
+                    enumerator.MoveNext();
                 }
             }
 
-            if (result.JumpToLabel != null)
+            if (_cancellationTokenSource.IsCancellationRequested)
             {
-                enumerator.MoveToLabel(result.JumpToLabel);
+                _logFunction(LogLevel.Info, enumerator.CurrentIndex, GetType().Name, "Execution cancelled");
             }
             else
             {
-                enumerator.MoveNext();
+                _logFunction(LogLevel.Info, 0, GetType().Name, "Execution finished");
             }
         }
-
-        if (_cancellationTokenSource.IsCancellationRequested)
+        catch (Exception exception)
         {
-            _logFunction(LogLevel.Info, enumerator.CurrentIndex, GetType().Name, "Execution cancelled");
+            _logFunction(LogLevel.Error, 0, GetType().Name, $"Execution exception: {exception}");
         }
     }
 

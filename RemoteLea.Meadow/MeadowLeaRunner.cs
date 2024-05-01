@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Meadow;
 using RemoteLea.Core;
 using RemoteLea.Core.Operations;
@@ -19,10 +21,11 @@ public class MeadowLeaRunner
         
         var executionEngine = new ExecutionEngine(manager, LogExecution);
         var serializer = new InstructionSerializer(manager);
-        Resolver.CommandService.Subscribe<AsmInstructionExecutionCommand>(command =>
+        Resolver.CommandService.Subscribe((command) =>
         {
-            if (string.IsNullOrWhiteSpace(command.Input))
+            if (!command.Arguments.TryGetValue("input", out var input) || input is not string strInput)
             {
+                Resolver.Log.Info("Received command with no input value");
                 return;
             }
 
@@ -30,7 +33,7 @@ public class MeadowLeaRunner
             InstructionSet instructions;
             try
             {
-                instructions = serializer.Deserialize(command.Input);
+                instructions = serializer.Deserialize(strInput);
             }
             catch (InstructionDeserializationException exception)
             {
@@ -42,10 +45,12 @@ public class MeadowLeaRunner
             }
             
             executionEngine.CancelCurrentExecution();
-            _ = executionEngine.Execute(instructions);
+            
+            Resolver.Log.Info("Executing instruction set");
+            Task.Run(async () => await executionEngine.Execute(instructions));
         });
         
-        Resolver.Log.Info("Starting RemoteLae Meadow Runner");
+        Resolver.Log.Info("Starting RemoteLea Meadow Execution Engine...");
     }
 
     private void LogExecution(LogLevel level, int instructionIndex, string operationName, string message)
@@ -65,8 +70,13 @@ public class MeadowLeaRunner
                 Resolver.Log.Error(finalMessage);
                 break;
             
+            case LogLevel.Debug:
+                Resolver.Log.Debug(finalMessage);
+                break;
+            
             default:
-                throw new NotSupportedException(level.ToString());
+                Resolver.Log.Warn($"RemoteLea log level of {level} not supported");
+                break;
         }
     }
 }

@@ -18,9 +18,9 @@ public class LogVarOperation : OperationBase
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        if (!context.Variables.TryGetValue(parsedArguments.Variable, out var variable))
+        if (!context.Variables.TryGetValue(parsedArguments.Variable.VariableName, out var variable))
         {
-            context.Log.ReferencedVariableDoesntExist(parsedArguments.Variable);
+            context.Log.ReferencedVariableDoesntExist(parsedArguments.Variable.VariableName);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
@@ -38,6 +38,6 @@ public class LogVarOperation : OperationBase
 
     private class Arguments
     {
-        public string Variable { get; set; } = null!;
+        public VariableReferenceArgumentValue Variable { get; set; }
     }
 }

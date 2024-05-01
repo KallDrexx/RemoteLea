@@ -52,6 +52,6 @@ public class SetPwmDutyCycleOperation : OperationBase
     private class Arguments
     {
         public VariableReferenceArgumentValue Variable { get; set; }
-        public float DutyCyclePercent { get; set; }
+        public int DutyCyclePercent { get; set; }
     }
 }

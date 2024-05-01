@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace RemoteLea.Core;
 
-public enum LogLevel { Info, Warning, Error }
+public enum LogLevel { Debug, Info, Warning, Error }
 
 /// <summary>
 /// A function that can log a message of a specified level

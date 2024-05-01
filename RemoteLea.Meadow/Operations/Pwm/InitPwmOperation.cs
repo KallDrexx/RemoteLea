@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using Meadow.Hardware;
 using Meadow.Units;
@@ -30,10 +32,20 @@ public class InitPwmOperation : OperationBase
         if (pinDefinitions == null) throw new ArgumentNullException(nameof(pinDefinitions));
 
         _pwmOutputController = pwmOutputController ?? throw new ArgumentNullException(nameof(pwmOutputController));
-        foreach (var pin in pinDefinitions.AllPins)
+
+        var pins = pinDefinitions.GetType()
+            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
+            .Where(x => typeof(IPin).IsAssignableFrom(x.PropertyType))
+            .Select(x => (x.Name, (IPin)x.GetValue(pinDefinitions)))
+            .ToArray();
+
+        foreach (var pin in pins)
         {
-            _pins[pin.Name] = pin;
+            _pins[pin.Name] = pin.Item2;
         }
+
+        var allPinNames = _pins.Keys.Aggregate(((x, y) => $"{x}, {y}"));
+        Console.WriteLine($"Known pins: {allPinNames}");
     }
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
