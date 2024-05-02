@@ -7,22 +7,18 @@ namespace RemoteLea.Core.Operations.Implementations;
 public class DelayOperation : OperationBase
 {
     public const string OpCode = "dly";
-    public const string TimeParam = nameof(Arguments.Milliseconds);
+    public const string TimeParam = "Milliseconds";
 
     protected override async ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
-        var parsedArguments = ParseArguments<Arguments>(context.Arguments, context.Log);
-        if (parsedArguments == null)
+        var ms = context.ParseIntArgument(TimeParam);
+        if (ms == null)
         {
+            context.LogInvalidRequiredArgument(TimeParam, ParameterType.Integer);
             return OperationExecutionResult.Failure();
         }
-
-        await Task.Delay(parsedArguments.Milliseconds, context.CancellationToken);
+        
+        await Task.Delay(ms.Value, context.CancellationToken);
         return OperationExecutionResult.Success();
-    }
-    
-    private class Arguments
-    {
-        public int Milliseconds { get; set; }
     }
 }

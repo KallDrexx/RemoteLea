@@ -7,21 +7,17 @@ namespace RemoteLea.Core.Operations.Implementations;
 public class JumpOperation : OperationBase
 {
     public const string OpCode = "jmp";
-    public const string LabelParam = nameof(Arguments.Label);
+    public const string LabelParam = "Label";
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
-        var parsedArguments = ParseArguments<Arguments>(context.Arguments, context.Log);
-        if (parsedArguments == null)
+        var label = context.ParseStringArgument(LabelParam);
+        if (label == null)
         {
+            context.LogInvalidRequiredArgument(LabelParam, ParameterType.String);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
         
-        return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success(parsedArguments.Label));
-    }
-    
-    private class Arguments
-    {
-        public string Label { get; set; } = null!;
+        return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success(label));
     }
 }

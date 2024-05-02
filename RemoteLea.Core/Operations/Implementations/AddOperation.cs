@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
 
 namespace RemoteLea.Core.Operations.Implementations;
 
@@ -13,74 +14,72 @@ public class AddOperation : OperationBase
 {
     public const string OpCode = "add";
     public const string ValueParam = "Value";
-    public const string OutputParam = nameof(Arguments.StorageVariable);
+    public const string OutputParam = "StorageVariable";
     private const ParameterType ValueType = ParameterType.Integer;
     private const ParameterType OutputType = ParameterType.VariableReference;
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
-        var parsedArguments = ParseArguments<Arguments>(context.Arguments, context.Log);
-        if (parsedArguments == null)
+        var storageVariable = context.ParseVariableArgument(OutputParam);
+        if (storageVariable == null)
         {
+            context.LogInvalidRequiredArgument(OutputParam, ParameterType.VariableReference);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
-
-        int numberToAdd = 0;
-        if (parsedArguments.IntValue != null)
+        
+        var intValue = context.ParseIntArgument(ValueParam);
+        var variableValue = context.ParseVariableArgument(ValueParam);
+        if (intValue == null && variableValue == null)
         {
-            numberToAdd = parsedArguments.IntValue.Value;
+            context.LogInvalidRequiredArgument(ValueParam, ParameterType.Integer | ParameterType.VariableReference);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
-        else if (parsedArguments.ValueVariable != null)
+        
+        var numberToAdd = 0;
+        if (intValue != null)
         {
-            if (!context.Variables.TryGetValue(parsedArguments.ValueVariable.Value.VariableName, out var valueVariable))
+            numberToAdd = intValue.Value;
+        }
+        else if (variableValue != null)
+        {
+            if (!context.Variables.TryGetValue(variableValue.Value.VariableName, out var valueVariable))
             {
-                context.Log.ReferencedVariableDoesntExist(parsedArguments.ValueVariable.Value.VariableName);
+                context.Log.ReferencedVariableDoesntExist(variableValue.Value.VariableName);
                 return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
             }
 
-            if (valueVariable is not int intValue)
+            if (valueVariable is not int variableInt)
             {
-                var message = $"Variable {parsedArguments.ValueVariable.Value.VariableName} is a " +
+                var message = $"Variable {variableValue.Value.VariableName} is a " +
                               $"{valueVariable.GetType().Name}, not an int";
                 context.Log(LogLevel.Error, message);
                 return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
             }
 
-            numberToAdd = intValue;
+            numberToAdd = variableInt;
         }
 
-        if (!context.Variables.TryGetValue(parsedArguments.StorageVariable.VariableName, out var variable))
+        if (!context.Variables.TryGetValue(storageVariable.Value.VariableName, out var variable))
         {
-            context.Log.ReferencedVariableDoesntExist(parsedArguments.StorageVariable.VariableName);
+            context.Log.ReferencedVariableDoesntExist(storageVariable.Value.VariableName);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
         if (variable is int integer)
         {
             var sum = integer + numberToAdd;
-            context.Outputs[parsedArguments.StorageVariable.VariableName] = sum;
-            context.Log(LogLevel.Info, $"Added {numberToAdd} to {parsedArguments.StorageVariable.VariableName} " +
+            context.Outputs[storageVariable.Value.VariableName] = sum;
+            context.Log(LogLevel.Info, $"Added {numberToAdd} to {storageVariable.Value.VariableName} " +
                                        $"(new value = {sum})");
         }
         else
         {
             var message =
-                $"Variable {parsedArguments.StorageVariable.VariableName} is a {variable.GetType()}, not an int";
+                $"Variable {storageVariable.Value.VariableName} is a {variable.GetType()}, not an int";
             context.Log(LogLevel.Error, message);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
         return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());
-    }
-
-    private class Arguments
-    {
-        [ExecutionArgument(nameOverride: ValueParam, isRequired: false)]
-        public int? IntValue { get; set; }
-
-        [ExecutionArgument(nameOverride: ValueParam, isRequired: false)]
-        public VariableReferenceArgumentValue? ValueVariable { get; set; }
-
-        public VariableReferenceArgumentValue StorageVariable { get; set; }
     }
 }

@@ -8,36 +8,32 @@ namespace RemoteLea.Core.Operations.Implementations;
 public class LogVarOperation : OperationBase
 {
     public const string OpCode = "logvar";
-    public const string VariableParam = nameof(Arguments.Variable);
+    public const string VariableParam = "Variable";
     
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
-        var parsedArguments = ParseArguments<Arguments>(context.Arguments, context.Log);
-        if (parsedArguments == null)
+        var variable = context.ParseVariableArgument(VariableParam);
+        if (variable == null)
         {
+            context.LogInvalidRequiredArgument(VariableParam, ParameterType.VariableReference);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+        }
+        
+        if (!context.Variables.TryGetValue(variable.Value.VariableName, out var variableValue))
+        {
+            context.Log.ReferencedVariableDoesntExist(variable.Value.VariableName);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        if (!context.Variables.TryGetValue(parsedArguments.Variable.VariableName, out var variable))
-        {
-            context.Log.ReferencedVariableDoesntExist(parsedArguments.Variable.VariableName);
-            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
-        }
-
-        var stringValue = variable switch
+        var stringValue = variableValue switch
         {
             byte[] array => BitConverter.ToString(array),
-            _ => variable?.ToString(),
+            _ => variable.ToString(),
         };
 
-        var message = $"Variable {parsedArguments.Variable} has the value of '{stringValue}'";
+        var message = $"Variable {variable.Value.VariableName} has the value of '{stringValue}'";
         context.Log(LogLevel.Info, message);
 
         return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());
-    }
-
-    private class Arguments
-    {
-        public VariableReferenceArgumentValue Variable { get; set; }
     }
 }

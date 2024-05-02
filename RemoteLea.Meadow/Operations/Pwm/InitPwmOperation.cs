@@ -20,9 +20,9 @@ namespace RemoteLea.Meadow.Operations.Pwm;
 [OperationParameter(2, VariableParam, ParameterType.VariableReference, "Variable to store the pwm port with.")]
 public class InitPwmOperation : OperationBase
 {
-    private const string PinNameParam = nameof(Arguments.PinName);
-    private const string VariableParam = nameof(Arguments.Variable);
-    private const string FrequencyParam = nameof(Arguments.Frequency);
+    private const string PinNameParam = "PinName";
+    private const string VariableParam = "Variable";
+    private const string FrequencyParam = "Frequency";
 
     private readonly IPwmOutputController _pwmOutputController;
     private readonly Dictionary<string, IPin> _pins = new(StringComparer.OrdinalIgnoreCase);
@@ -50,33 +50,41 @@ public class InitPwmOperation : OperationBase
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
-        var parsedArguments = ParseArguments<Arguments>(context.Arguments, context.Log);
-        if (parsedArguments == null)
+        var pinName = context.ParseStringArgument(PinNameParam);
+        if (pinName == null)
         {
+            context.LogInvalidRequiredArgument(PinNameParam, ParameterType.String);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        if (!_pins.TryGetValue(parsedArguments.PinName, out var pin))
+        var frequency = context.ParseIntArgument(FrequencyParam);
+        if (frequency == null)
         {
-            var message = $"No known pin with the name '{parsedArguments.PinName}'";
+            context.LogInvalidRequiredArgument(FrequencyParam, ParameterType.Integer);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+        }
+
+        var variable = context.ParseVariableArgument(VariableParam);
+        if (variable == null)
+        {
+            context.LogInvalidRequiredArgument(VariableParam, ParameterType.VariableReference);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+        }
+        
+        if (!_pins.TryGetValue(pinName, out var pin))
+        {
+            var message = $"No known pin with the name '{pinName}'";
             context.Log(LogLevel.Error, message);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
         var pwmPort = _pwmOutputController.CreatePwmPort(pin,
-            new Frequency(parsedArguments.Frequency, Frequency.UnitType.Hertz), 0f);
+            new Frequency(frequency.Value, Frequency.UnitType.Hertz), 0f);
 
         pwmPort.Start();
 
-        context.Outputs.Add(parsedArguments.Variable.VariableName, pwmPort);
+        context.Outputs.Add(variable.Value.VariableName, pwmPort);
 
         return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());
-    }
-
-    private class Arguments
-    {
-        public string PinName { get; set; } = null!;
-        public int Frequency { get; set; }
-        public VariableReferenceArgumentValue Variable { get; set; }
     }
 }

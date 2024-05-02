@@ -19,75 +19,57 @@ public class SetValueOperation : OperationBase
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
-        var parsedArguments = ParseArguments<Arguments>(context.Arguments, context.Log);
-        if (parsedArguments == null)
+        var intValue = context.ParseIntArgument(ValueParam);
+        var stringValue = context.ParseStringArgument(ValueParam);
+        var boolValue = context.ParseBoolArgument(ValueParam);
+        var byteArrayValue = context.ParseByteArrayArgument(ValueParam);
+        var variableValue = context.ParseVariableArgument(ValueParam);
+
+        var outputVariable = context.ParseVariableArgument(VariableOutput);
+        if (outputVariable == null)
         {
+            context.LogInvalidRequiredArgument(VariableOutput, ParameterType.VariableReference);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
-
-        if (parsedArguments.IntValue != null)
+        
+        if (intValue != null)
         {
-            context.Outputs[parsedArguments.OutputVariable.VariableName] = parsedArguments.IntValue.Value;
-            context.Log(LogLevel.Info,
-                $"Set {parsedArguments.OutputVariable.VariableName} to {parsedArguments.IntValue}");
+            context.Outputs[outputVariable.Value.VariableName] = intValue.Value;
+            context.Log(LogLevel.Debug, $"Set {outputVariable.Value.VariableName} to {intValue}");
         }
-        else if (parsedArguments.BoolValue != null)
+        else if (boolValue != null)
         {
-            context.Outputs[parsedArguments.OutputVariable.VariableName] = parsedArguments.BoolValue.Value;
-            context.Log(LogLevel.Info,
-                $"Set {parsedArguments.OutputVariable.VariableName} to {parsedArguments.BoolValue}");
+            context.Outputs[outputVariable.Value.VariableName] = boolValue.Value;
+            context.Log(LogLevel.Info, $"Set {outputVariable.Value.VariableName} to {boolValue}");
         }
-        else if (parsedArguments.StringValue != null)
+        else if (stringValue != null)
         {
-            context.Outputs[parsedArguments.OutputVariable.VariableName] = parsedArguments.StringValue;
-            context.Log(LogLevel.Info,
-                $"Set {parsedArguments.OutputVariable.VariableName} to {parsedArguments.StringValue}");
+            context.Outputs[outputVariable.Value.VariableName] = stringValue;
+            context.Log(LogLevel.Info, $"Set {outputVariable.Value.VariableName} to {stringValue}");
         }
-        else if (parsedArguments.ByteArrayValue != null)
+        else if (byteArrayValue != null)
         {
-            context.Outputs[parsedArguments.OutputVariable.VariableName] = parsedArguments.ByteArrayValue;
+            context.Outputs[outputVariable.Value.VariableName] = byteArrayValue;
             context.Log(LogLevel.Info,
-                $"Set {parsedArguments.OutputVariable.VariableName} to {Convert.ToString(parsedArguments.ByteArrayValue)}");
+                $"Set {outputVariable.Value.VariableName} to {Convert.ToString(byteArrayValue)}");
         }
-        else if (parsedArguments.VariableValue != null)
+        else if (variableValue != null)
         {
-            if (!context.Variables.TryGetValue(parsedArguments.VariableValue.Value.VariableName, out var variable))
+            if (!context.Variables.TryGetValue(variableValue.Value.VariableName, out var variable))
             {
-                context.Log.ReferencedVariableDoesntExist(parsedArguments.VariableValue.Value.VariableName);
+                context.Log.ReferencedVariableDoesntExist(variableValue.Value.VariableName);
                 return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
             }
 
-            context.Outputs[parsedArguments.OutputVariable.VariableName] = variable;
-            context.Log(LogLevel.Info, $"Set {parsedArguments.OutputVariable.VariableName} to {variable}");
+            context.Outputs[outputVariable.Value.VariableName] = variable;
+            context.Log(LogLevel.Info, $"Set {outputVariable.Value.VariableName} to {variable}");
         }
         else
         {
-            // TODO: Log if it was provided but an unknown type
-            context.Log.RequiredArgumentNotProvided(ValueParam);
+            context.LogInvalidRequiredArgument(ValueParam, ValueTypes);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
         return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());
-    }
-
-    private class Arguments
-    {
-        [ExecutionArgument(nameOverride: ValueParam, isRequired: false)]
-        public int? IntValue { get; set; }
-
-        [ExecutionArgument(nameOverride: ValueParam, isRequired: false)]
-        public string? StringValue { get; set; }
-
-        [ExecutionArgument(nameOverride: ValueParam, isRequired: false)]
-        public bool? BoolValue { get; set; }
-
-        [ExecutionArgument(nameOverride: ValueParam, isRequired: false)]
-        public byte[]? ByteArrayValue { get; set; }
-
-        [ExecutionArgument(nameOverride: ValueParam, isRequired: false)]
-        public VariableReferenceArgumentValue? VariableValue { get; set; }
-
-        [ExecutionArgument(nameOverride: VariableOutput, isRequired: true)]
-        public VariableReferenceArgumentValue OutputVariable { get; set; }
     }
 }

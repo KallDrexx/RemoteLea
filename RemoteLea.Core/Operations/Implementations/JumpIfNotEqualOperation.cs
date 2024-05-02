@@ -16,49 +16,58 @@ public class JumpIfNotEqualOperation : OperationBase
 {
     public const string OpCode = "jne";
     
-    public const string FirstVar = nameof(Arguments.First);
-    public const string SecondVar = nameof(Arguments.Second);
-    public const string LabelParam = nameof(Arguments.Label);
+    public const string FirstVar = "First";
+    public const string SecondVar = "Second";
+    public const string LabelParam = "Label";
     
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
-        var parsedArgs = ParseArguments<Arguments>(context.Arguments, context.Log);
-        if (parsedArgs == null)
+        var firstVar = context.ParseVariableArgument(FirstVar);
+        var secondVar = context.ParseVariableArgument(SecondVar);
+        var label = context.ParseStringArgument(LabelParam);
+
+        if (firstVar == null)
         {
+            context.LogInvalidRequiredArgument(FirstVar, ParameterType.VariableReference);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        if (!context.Variables.TryGetValue(parsedArgs.First.VariableName, out var first))
+        if (secondVar == null)
         {
-            context.Log.ReferencedVariableDoesntExist(parsedArgs.First.VariableName);
+            context.LogInvalidRequiredArgument(SecondVar, ParameterType.VariableReference);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        if (!context.Variables.TryGetValue(parsedArgs.Second.VariableName, out var second))
+        if (label == null)
         {
-            context.Log.ReferencedVariableDoesntExist(parsedArgs.Second.VariableName);
+            context.LogInvalidRequiredArgument(LabelParam, ParameterType.String);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+        }
+
+        if (!context.Variables.TryGetValue(firstVar.Value.VariableName, out var first))
+        {
+            context.Log.ReferencedVariableDoesntExist(firstVar.Value.VariableName);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+        }
+
+        if (!context.Variables.TryGetValue(secondVar.Value.VariableName, out var second))
+        {
+            context.Log.ReferencedVariableDoesntExist(secondVar.Value.VariableName);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
         if (first.GetType() != second.GetType())
         {
-            var message = $"Variable `{parsedArgs.First.VariableName}` has a type of {first.GetType().Name} while " +
-                          $"variable `{parsedArgs.Second.VariableName}` has a type of {second.GetType().Name}. Considering" +
+            var message = $"Variable `{firstVar.Value.VariableName}` has a type of {first.GetType().Name} while " +
+                          $"variable `{secondVar.Value.VariableName}` has a type of {second.GetType().Name}. Considering" +
                           $"them as not equal";
 
             context.Log(LogLevel.Warning, message);
-            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success(parsedArgs.Label));
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success(label));
         }
 
         return first.Equals(second)
             ? new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success())
-            : new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success(parsedArgs.Label));
-    }
-
-    private class Arguments
-    {
-        public VariableReferenceArgumentValue First { get; set; }
-        public VariableReferenceArgumentValue Second { get; set; }
-        public string Label { get; set; } = null!;
+            : new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success(label));
     }
 }

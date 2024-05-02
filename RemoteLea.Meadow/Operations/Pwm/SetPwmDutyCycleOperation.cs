@@ -11,47 +11,48 @@ namespace RemoteLea.Meadow.Operations.Pwm;
     "Percent between 0 and 100 for the duty cycle of the pwm")]
 public class SetPwmDutyCycleOperation : OperationBase
 {
-    private const string VariableParam = nameof(Arguments.Variable);
-    private const string DutyCycleParam = nameof(Arguments.DutyCyclePercent);
+    private const string VariableParam = "Variable";
+    private const string DutyCycleParam = "DutyCyclePercent";
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
-        var parsedArguments = ParseArguments<Arguments>(context.Arguments, context.Log);
-        if (parsedArguments == null)
+        var variable = context.ParseVariableArgument(VariableParam);
+        if (variable == null)
         {
+            context.LogInvalidRequiredArgument(VariableParam, ParameterType.VariableReference);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        if (!context.Variables.TryGetValue(parsedArguments.Variable.VariableName, out var variable))
+        var dutyCycle = context.ParseIntArgument(DutyCycleParam);
+        if (dutyCycle == null)
         {
-            var message = $"No known variable with the name '{parsedArguments.Variable.VariableName}'";
+            context.LogInvalidRequiredArgument(DutyCycleParam, ParameterType.Integer);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+        }
+        
+        if (!context.Variables.TryGetValue(variable.Value.VariableName, out var variableValue))
+        {
+            var message = $"No known variable with the name '{variable.Value.VariableName}'";
             context.Log(LogLevel.Error, message);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        if (variable is not IPwmPort pwmPort)
+        if (variableValue is not IPwmPort pwmPort)
         {
-            var message = $"Variable '{parsedArguments.Variable.VariableName}' is a {variable.GetType().Name} " +
+            var message = $"Variable '{variable.Value.VariableName}' is a {variable.GetType().Name} " +
                           $"but an IPwmPort was expected.";
             context.Log(LogLevel.Error, message);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        if (parsedArguments.DutyCyclePercent is < 0 or > 100)
+        if (dutyCycle is < 0 or > 100)
         {
-            var message = $"Duty cycle percent should be between 0 and 100, " +
-                          $"but instead was {parsedArguments.DutyCyclePercent}";
+            var message = $"Duty cycle percent should be between 0 and 100, but instead was {dutyCycle}";
             context.Log(LogLevel.Error, message);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
 
-        pwmPort.DutyCycle = parsedArguments.DutyCyclePercent / 100f;
+        pwmPort.DutyCycle = dutyCycle.Value / 100f;
         return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());
-    }
-
-    private class Arguments
-    {
-        public VariableReferenceArgumentValue Variable { get; set; }
-        public int DutyCyclePercent { get; set; }
     }
 }
