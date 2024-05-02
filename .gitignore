@@ -6,3 +6,5 @@ riderModule.iml
 .idea/
 *.suo
 *.user
+.vscode/
+wifi.config.yaml
