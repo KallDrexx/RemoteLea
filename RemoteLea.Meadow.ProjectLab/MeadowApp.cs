@@ -26,8 +26,8 @@ namespace RemoteLea.Meadow.ProjectLab
             Resolver.Services.Add(cloudLogger);
             Resolver.Log.Info("Initialize...");
             
-            Console.WriteLine($"Test: {Device.Pins.D09}");
-            var operations = CoreOperations.All().Concat(MeadowOperations.All(Device, Device.Pins));
+            var pins = new PinLookup(Device.Pins);
+            var operations = CoreOperations.All().Concat(MeadowOperations.All(Device, pins));
             _meadowLeaRunner = new MeadowLeaRunner(operations);
 
             return Task.CompletedTask;

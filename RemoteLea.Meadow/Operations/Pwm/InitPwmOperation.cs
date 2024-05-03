@@ -25,27 +25,12 @@ public class InitPwmOperation : OperationBase
     private const string FrequencyParam = "Frequency";
 
     private readonly IPwmOutputController _pwmOutputController;
-    private readonly Dictionary<string, IPin> _pins = new(StringComparer.OrdinalIgnoreCase);
+    private readonly PinLookup _pins;
 
-    public InitPwmOperation(IPinDefinitions pinDefinitions, IPwmOutputController pwmOutputController)
+    public InitPwmOperation(IPwmOutputController pwmOutputController, PinLookup pinLookup)
     {
-        if (pinDefinitions == null) throw new ArgumentNullException(nameof(pinDefinitions));
-
         _pwmOutputController = pwmOutputController ?? throw new ArgumentNullException(nameof(pwmOutputController));
-
-        var pins = pinDefinitions.GetType()
-            .GetProperties(BindingFlags.Instance | BindingFlags.Public)
-            .Where(x => typeof(IPin).IsAssignableFrom(x.PropertyType))
-            .Select(x => (x.Name, (IPin)x.GetValue(pinDefinitions)))
-            .ToArray();
-
-        foreach (var pin in pins)
-        {
-            _pins[pin.Name] = pin.Item2;
-        }
-
-        var allPinNames = _pins.Keys.Aggregate(((x, y) => $"{x}, {y}"));
-        Console.WriteLine($"Known pins: {allPinNames}");
+        _pins = pinLookup ?? throw new ArgumentNullException(nameof(pinLookup));
     }
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
@@ -70,8 +55,9 @@ public class InitPwmOperation : OperationBase
             context.LogInvalidRequiredArgument(VariableParam, ParameterType.VariableReference);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
-        
-        if (!_pins.TryGetValue(pinName, out var pin))
+
+        var pin = _pins.Get(pinName);
+        if (pin == null)
         {
             var message = $"No known pin with the name '{pinName}'";
             context.Log(LogLevel.Error, message);

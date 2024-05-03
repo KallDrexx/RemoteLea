@@ -8,11 +8,11 @@ namespace RemoteLea.Meadow;
 
 public static class MeadowOperations
 {
-    public static IEnumerable<OperationBase> All(IMeadowDevice device, IPinDefinitions pinDefinitions)
+    public static IEnumerable<OperationBase> All(IMeadowDevice device, PinLookup pins)
     {
         if (device is IPwmOutputController pwmController)
         {
-            yield return new InitPwmOperation(pinDefinitions, pwmController);
+            yield return new InitPwmOperation(pwmController, pins);
             yield return new SetPwmDutyCycleOperation();
         }
     }
