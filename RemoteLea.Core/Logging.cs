@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 
 namespace RemoteLea.Core;
@@ -18,25 +17,6 @@ public delegate void InstructionLogFunction(LogLevel level, string message);
 
 public static class LogUtils
 {
-    /// <summary>
-    /// Logs an error that a required argument was not provided
-    /// </summary>
-    public static void InvalidRequiredArgument(
-        this InstructionLogFunction logger, 
-        string argumentName,
-        IReadOnlyDictionary<string, IArgumentValue> arguments,
-        ParameterType allowedTypes)
-    {
-        if (arguments.TryGetValue(argumentName, out var argumentValue))
-        {
-            logger.IncorrectArgumentType(argumentName, argumentValue.GetType(), allowedTypes);
-        }
-        else
-        {
-            logger(LogLevel.Error, $"Argument `{argumentName}` not provided but is required");
-        }
-    }
-
     /// <summary>
     /// Logs an error that an argument was provided with an unexpected type
     /// </summary>
