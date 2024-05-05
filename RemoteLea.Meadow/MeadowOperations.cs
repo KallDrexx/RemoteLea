@@ -27,16 +27,13 @@ public static class MeadowOperations
         if (device is IDigitalInputController inputController)
         {
             yield return new InitInputPortOperation(inputController, pins);
+            yield return new SaveInputStateOperation();
+            yield return new WaitForInputPortStateOperation();
         }
 
         if (device is IDigitalOutputController outputController)
         {
             yield return new InitOutputPortOperation(outputController, pins);
-        }
-
-        if (device is IDigitalInterruptController interruptController)
-        {
-            yield return new InitInterruptPortOperation(interruptController, pins);
         }
     }
 }
