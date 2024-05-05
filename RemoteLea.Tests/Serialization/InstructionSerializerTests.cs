@@ -13,7 +13,7 @@ public class InstructionSerializerTests
         var input = """
                     set $var 12
                     some_label: add 5 $var
-                    jmp "some_label"
+                    jump "some_label"
                     """;
 
         var operationManager = Utilities.GetOperationManagerWithAllOperations();
@@ -23,7 +23,7 @@ public class InstructionSerializerTests
         using var enumerator = instructionSet.GetEnumerator();
         enumerator.MoveNext().ShouldBeTrue();
         enumerator.Current.ShouldMatch(new Instruction(
-            "set",
+            SetValueOperation.OpCodeValue,
             new Dictionary<string, IArgumentValue>
             {
                 { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("var") },
@@ -32,7 +32,7 @@ public class InstructionSerializerTests
 
         enumerator.MoveNext().ShouldBeTrue();
         enumerator.Current.ShouldMatch(new Instruction(
-            "add",
+            AddOperation.OpCodeValue,
             new Dictionary<string, IArgumentValue>
             {
                 { AddOperation.ValueParam, new IntArgumentValue(5) },
@@ -42,7 +42,7 @@ public class InstructionSerializerTests
 
         enumerator.MoveNext().ShouldBeTrue();
         enumerator.Current.ShouldMatch(new Instruction(
-            "jmp",
+            JumpOperation.OpCodeValue,
             new Dictionary<string, IArgumentValue>
             {
                 {JumpOperation.LabelParam, new StringArgumentValue("some_label")}

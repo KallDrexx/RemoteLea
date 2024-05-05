@@ -1,15 +1,21 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RemoteLea.Core.Operations.Implementations;
 
-[Operation(OpCode)]
-[OperationParameter(0, VariableParam, ParameterType.VariableReference, "Variable to log the value of")]
 public class LogVarOperation : OperationBase
 {
-    public const string OpCode = "log_var";
+    public const string OpCodeValue = "log_var";
     public const string VariableParam = "Variable";
     
+    protected override string OpCode => OpCodeValue;
+
+    protected override IReadOnlyList<OperationParameter> Parameters => new[]
+    {
+        new OperationParameter(VariableParam, ParameterType.VariableReference, "Variable to log the value of"),
+    };
+
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
         var variable = context.ParseVariableArgument(VariableParam);

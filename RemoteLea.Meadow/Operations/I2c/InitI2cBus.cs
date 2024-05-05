@@ -1,17 +1,23 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Meadow.Hardware;
 using RemoteLea.Core;
 using RemoteLea.Core.Operations;
 
 namespace RemoteLea.Meadow.Operations.I2c;
 
-[Operation(OpCode)]
-[OperationParameter(0, StorageVariable, ParameterType.VariableReference, "Variable to store the i2c bus in")]
 public class InitI2CBus : OperationBase
 {
-    public const string OpCode = "init_i2c_bus";
+    public const string OpCodeValue = "init_i2c_bus";
     public const string StorageVariable = "StorageVariable";
     private readonly II2cController _i2CController;
+    
+    protected override string OpCode => OpCodeValue;
+
+    protected override IReadOnlyList<OperationParameter> Parameters => new[]
+    {
+        new OperationParameter(StorageVariable, ParameterType.VariableReference, "Variable to store the i2c bus in"),
+    };
 
     public InitI2CBus(II2cController i2CController)
     {

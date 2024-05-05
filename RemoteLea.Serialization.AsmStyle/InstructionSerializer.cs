@@ -105,7 +105,7 @@ public class InstructionSerializer
             throw new InstructionDeserializationException(lineNumber, tokenStart.Value, message);
         }
 
-        var orderedParameters = definition.Parameters.OrderBy(x => x.Order).ToArray();
+        var orderedParameters = definition.Parameters;
         var arguments = new Dictionary<string, IArgumentValue>();
         var argumentIndex = -1;
         while (true)
@@ -119,7 +119,7 @@ public class InstructionSerializer
                 break;
             }
 
-            if (argumentIndex >= orderedParameters.Length)
+            if (argumentIndex >= orderedParameters.Count)
             {
                 var message = $"Argument #{argumentIndex} does not match any parameters for {opCode}";
                 throw new InstructionDeserializationException(lineNumber, tokenStart.Value, message);

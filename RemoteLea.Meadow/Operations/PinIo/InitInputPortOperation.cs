@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Meadow.Hardware;
 using RemoteLea.Core;
@@ -6,17 +7,22 @@ using RemoteLea.Core.Operations;
 
 namespace RemoteLea.Meadow.Operations.PinIo;
 
-[Operation(OpCode)]
-[OperationParameter(0, PinNameParam, ParameterType.String, "Name of the pin")]
-[OperationParameter(1, StorageVariableParam, ParameterType.VariableReference, "Variable to store the pin in")]
 public class InitInputPortOperation : OperationBase
 {
-    public const string OpCode = "init_input_port";
+    public const string OpCodeValue = "init_input_port";
     public const string PinNameParam = "PinName";
     public const string StorageVariableParam = "Variable";
 
     private readonly IDigitalInputController _inputController;
     private readonly PinLookup _pinLookup;
+    
+    protected override string OpCode => OpCodeValue;
+    
+    protected override IReadOnlyList<OperationParameter> Parameters => new[]
+    {
+        new OperationParameter(PinNameParam, ParameterType.String, "Name of the pin"),
+        new OperationParameter(StorageVariableParam, ParameterType.VariableReference, "Variable to store the pin in"),
+    };
 
     public InitInputPortOperation(IDigitalInputController inputController, PinLookup pinLookup)
     {

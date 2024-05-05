@@ -1,18 +1,28 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Meadow.Hardware;
 using RemoteLea.Core;
 using RemoteLea.Core.Operations;
 
 namespace RemoteLea.Meadow.Operations.Pwm;
 
-[Operation("set_pwm_duty_cycle")]
-[OperationParameter(0, VariableParam, ParameterType.VariableReference, "Variable with the pwm port")]
-[OperationParameter(1, DutyCycleParam, ParameterType.Integer,
-    "Percent between 0 and 100 for the duty cycle of the pwm")]
 public class SetPwmDutyCycleOperation : OperationBase
 {
+    public const string OpCodeValue = "set_pwm_duty_cycle";
+    
     private const string VariableParam = "Variable";
     private const string DutyCycleParam = "DutyCyclePercent";
+    
+    protected override string OpCode => OpCodeValue;
+    
+    protected override IReadOnlyList<OperationParameter> Parameters => new[]
+    {
+        new OperationParameter(VariableParam, ParameterType.VariableReference, 
+            "Variable with the pwm port"),
+        
+        new OperationParameter(DutyCycleParam, ParameterType.Integer,
+            "Percent between 0 and 100 for the duty cycle of the pwm"),
+    };
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace RemoteLea.Core.Operations.Implementations;
@@ -6,16 +7,21 @@ namespace RemoteLea.Core.Operations.Implementations;
 /// <summary>
 /// Operation that allows setting a variable to a specified value
 /// </summary>
-[Operation(OpCode)]
-[OperationParameter(0, VariableOutput, OutputTypes, "Variable to set the value for")]
-[OperationParameter(1, ValueParam, ValueTypes, "Value to set the variable to")]
 public class SetValueOperation : OperationBase
 {
-    public const string OpCode = "set";
+    public const string OpCodeValue = "set";
     public const string ValueParam = "Value";
     public const string VariableOutput = "Variable";
     private const ParameterType ValueTypes = ParameterType.Any;
     private const ParameterType OutputTypes = ParameterType.VariableReference;
+    
+    protected override string OpCode => OpCodeValue;
+
+    protected override IReadOnlyList<OperationParameter> Parameters => new[]
+    {
+        new OperationParameter(VariableOutput, OutputTypes, "Variable to set the value for"),
+        new OperationParameter(ValueParam, ValueTypes, "Value to set the variable to")
+    };
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {

@@ -9,7 +9,7 @@ namespace RemoteLea.Core.Operations;
 /// <summary>
 /// Defines a parameter that can be given to an operation
 /// </summary>
-public record OperationParameter(int Order, string Name, ParameterType ValidTypes, string Description);
+public record OperationParameter(string Name, ParameterType ValidTypes, string Description);
 
 /// <summary>
 /// Defines a specific operation that's been implemented
@@ -24,26 +24,36 @@ public record OperationDefinition(string OpCode, IReadOnlyList<OperationParamete
 /// </summary>
 public abstract class OperationBase
 {
-    protected OperationBase()
-    {
-        var operationAttr = GetType().GetCustomAttribute<OperationAttribute>();
-        if (operationAttr == null)
-        {
-            const string message = "Operation had no `OperationAttribute` specified";
-            throw new InvalidOperationException(message);
-        }
+    /// <summary>
+    /// String that uniquely identifies this operation
+    /// </summary>
+    protected abstract string OpCode { get; }
 
-        var parameters = GetType().GetCustomAttributes<OperationParameterAttribute>();
-        Definition = new OperationDefinition(
-            operationAttr.OpCode,
-            parameters.Select(x => new OperationParameter(x.Order, x.Name, x.ValidTypes, x.Description)).ToArray());
-    }
-
+    /// <summary>
+    /// Defines all parameters that this operation accepts. The order of these parameters
+    /// determines the order in which they should be provided when calling the operation.
+    /// </summary>
+    protected abstract IReadOnlyList<OperationParameter> Parameters { get; }
+    
     /// <summary>
     /// Retrieves the definition for this instruction
     /// </summary>
     public OperationDefinition Definition { get; }
 
+    protected OperationBase()
+    {
+        // WARNING: Operation implementations must have opcodes and parameters set up
+        // in their initializers (not constructors) to ensure they are available for 
+        // the `OperationBase` constructor. Since the `OperationBase` constructor is called
+        // prior to derived constructors, implementation classes can't contain their opcode/param
+        // creation in their constructors.
+        //
+        // This is acceptable because these values should not be dynamic and should be known
+        // at compile time.  That makes the virtual member calls safe.
+        
+        Definition = new OperationDefinition(OpCode, Parameters);
+    }
+   
     /// <summary>
     /// Executes the operation with the specified context
     /// </summary>

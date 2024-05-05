@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RemoteLea.Core.Operations.Implementations;
 
@@ -8,17 +9,21 @@ namespace RemoteLea.Core.Operations.Implementations;
 /// variables exist but are of different types, then they are counted as not equal and a warning is
 /// logged.
 /// </summary>
-[Operation(OpCode)]
-[OperationParameter(0, FirstVar, ParameterType.VariableReference, "First variable for comparison")]
-[OperationParameter(1, SecondVar, ParameterType.VariableReference, "Second variable to compare")]
-[OperationParameter(2, LabelParam, ParameterType.String, "Label to jump to if variables are equal")]
 public class JumpIfNotEqualOperation : OperationBase
 {
-    public const string OpCode = "jne";
+    public const string OpCodeValue = "jne";
     
     public const string FirstVar = "First";
     public const string SecondVar = "Second";
     public const string LabelParam = "Label";
+    
+    protected override string OpCode => OpCodeValue;
+    protected override IReadOnlyList<OperationParameter> Parameters => new []
+    {
+        new OperationParameter(FirstVar, ParameterType.VariableReference, "First variable for comparison"),
+        new OperationParameter(SecondVar, ParameterType.VariableReference, "Second variable to compare"),
+        new OperationParameter(LabelParam, ParameterType.String, "Label to jump to if variables are equal")
+    };
     
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {

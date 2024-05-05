@@ -1,13 +1,19 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace RemoteLea.Core.Operations.Implementations;
 
-[Operation(OpCode)]
-[OperationParameter(0, TimeParam, ParameterType.Integer, "Number of milliseconds to wait for")]
 public class SleepOperation : OperationBase
 {
-    public const string OpCode = "sleep";
+    public const string OpCodeValue = "sleep";
     public const string TimeParam = "Milliseconds";
+    
+    protected override string OpCode => OpCodeValue;
+
+    protected override IReadOnlyList<OperationParameter> Parameters => new[]
+    {
+        new OperationParameter(TimeParam, ParameterType.Integer, "Number of milliseconds to wait for"),
+    };
 
     protected override async ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {

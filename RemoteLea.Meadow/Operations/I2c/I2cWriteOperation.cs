@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Meadow.Hardware;
 using RemoteLea.Core;
@@ -6,17 +7,23 @@ using RemoteLea.Core.Operations;
 
 namespace RemoteLea.Meadow.Operations.I2c;
 
-[Operation(OpCode)]
-[OperationParameter(0, BusVariable, ParameterType.VariableReference, "Variable holding the i2c bus to write to")]
-[OperationParameter(1, AddressParam, ParameterType.ByteArray, "Address to write to")]
-[OperationParameter(2, DataParam, ParameterType.ByteArray, "Data to write on the i2c bus")]
 public class I2CWriteOperation : OperationBase
 {
-    public const string OpCode = "i2c_write";
+    public const string OpCodeValue = "i2c_write";
     public const string BusVariable = "BusVariable";
     public const string AddressParam = "Address";
     public const string DataParam = "Data";
     
+    protected override string OpCode => OpCodeValue;
+
+    protected override IReadOnlyList<OperationParameter> Parameters => new[]
+    {
+        new OperationParameter(BusVariable, ParameterType.VariableReference,
+            "Variable holding the i2c bus to write to"),
+        new OperationParameter(AddressParam, ParameterType.ByteArray, "Address to write to"),
+        new OperationParameter(DataParam, ParameterType.ByteArray, "Data to write on the i2c bus"),
+    };
+
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
         var data = context.ParseByteArrayArgument(DataParam);

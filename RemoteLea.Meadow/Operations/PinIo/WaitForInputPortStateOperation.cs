@@ -1,19 +1,27 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using Meadow.Hardware;
 using RemoteLea.Core;
 using RemoteLea.Core.Operations;
 
 namespace RemoteLea.Meadow.Operations.PinIo;
 
-[Operation(OpCode)]
-[OperationParameter(0, PortVariableParam, ParameterType.VariableReference, "Variable containing the input port")]
-[OperationParameter(1, StateToWaitFor, ParameterType.Bool, "The state to wait for")]
 public class WaitForInputPortStateOperation : OperationBase
 {
-    public const string OpCode = "wait_for_input_state";
+    public const string OpCodeValue = "wait_for_input_state";
     public const string PortVariableParam = "PortVariable";
     public const string StateToWaitFor = "DesiredState";
     
+    protected override string OpCode => OpCodeValue;
+
+    protected override IReadOnlyList<OperationParameter> Parameters => new[]
+    {
+        new OperationParameter(PortVariableParam, ParameterType.VariableReference,
+            "Variable containing the input port"),
+        
+        new OperationParameter(StateToWaitFor, ParameterType.Bool, "The state to wait for"),
+    };
+
     protected override async ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
         var portVariable = context.ParseVariableArgument(PortVariableParam);

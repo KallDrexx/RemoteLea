@@ -12,7 +12,7 @@ public class ExecutionEngineTests
         var engine = new TestExecutionEngine();
         var set = new InstructionSet(new List<Instruction>
         {
-            new(SetValueOperation.OpCode, new Dictionary<string, IArgumentValue>
+            new(SetValueOperation.OpCodeValue, new Dictionary<string, IArgumentValue>
             {
                 { SetValueOperation.ValueParam, new IntArgumentValue(1234) },
                 { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("test") },
@@ -31,12 +31,12 @@ public class ExecutionEngineTests
         var engine = new TestExecutionEngine();
         var set = new InstructionSet(new List<Instruction>
         {
-            new(SetValueOperation.OpCode, new Dictionary<string, IArgumentValue>
+            new(SetValueOperation.OpCodeValue, new Dictionary<string, IArgumentValue>
             {
                 { SetValueOperation.ValueParam, new IntArgumentValue(10) },
                 { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("value") },
             }),
-            new(AddOperation.OpCode, new Dictionary<string, IArgumentValue>
+            new(AddOperation.OpCodeValue, new Dictionary<string, IArgumentValue>
             {
                 { AddOperation.ValueParam, new IntArgumentValue(5) },
                 { AddOperation.OutputParam, new VariableReferenceArgumentValue("value") },
@@ -55,22 +55,22 @@ public class ExecutionEngineTests
         var engine = new TestExecutionEngine();
         var set = new InstructionSet(new List<Instruction>
         {
-            new(SetValueOperation.OpCode, new Dictionary<string, IArgumentValue>
+            new(SetValueOperation.OpCodeValue, new Dictionary<string, IArgumentValue>
             {
                 { SetValueOperation.ValueParam, new IntArgumentValue(0) },
                 { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("value") },
             }),
-            new(SetValueOperation.OpCode, new Dictionary<string, IArgumentValue>
+            new(SetValueOperation.OpCodeValue, new Dictionary<string, IArgumentValue>
             {
                 { SetValueOperation.ValueParam, new IntArgumentValue(15) },
                 { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("check") },
             }),
-            new(AddOperation.OpCode, new Dictionary<string, IArgumentValue>
+            new(AddOperation.OpCodeValue, new Dictionary<string, IArgumentValue>
             {
                 { AddOperation.ValueParam, new IntArgumentValue(1) },
                 { AddOperation.OutputParam, new VariableReferenceArgumentValue("value") },
             }, "counter"),
-            new(JumpIfNotEqualOperation.OpCode, new Dictionary<string, IArgumentValue>
+            new(JumpIfNotEqualOperation.OpCodeValue, new Dictionary<string, IArgumentValue>
             {
                 { JumpIfNotEqualOperation.FirstVar, new VariableReferenceArgumentValue("value") },
                 { JumpIfNotEqualOperation.SecondVar, new VariableReferenceArgumentValue("check") },
@@ -90,12 +90,12 @@ public class ExecutionEngineTests
         var engine = new TestExecutionEngine();
         var set = new InstructionSet(new List<Instruction>
         {
-            new(SetValueOperation.OpCode, new Dictionary<string, IArgumentValue>
+            new(SetValueOperation.OpCodeValue, new Dictionary<string, IArgumentValue>
             {
                 { SetValueOperation.ValueParam, new IntArgumentValue(0) },
                 { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("value") },
             }, "label"),
-            new(JumpOperation.OpCode, new Dictionary<string, IArgumentValue>
+            new(JumpOperation.OpCodeValue, new Dictionary<string, IArgumentValue>
             {
                 { JumpOperation.LabelParam, new StringArgumentValue("label") },
             }),

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Meadow.Hardware;
 using Meadow.Units;
@@ -11,18 +12,25 @@ namespace RemoteLea.Meadow.Operations.Pwm;
 /// Creates a PWM port for the provided pin and saves it into the specified variable. PWm is started
 /// with a zero duty cycle.
 /// </summary>
-[Operation("init_pwm")]
-[OperationParameter(0, PinNameParam, ParameterType.String, "Name of the pin to create a PWM port for.")]
-[OperationParameter(1, FrequencyParam, ParameterType.Integer, "Frequency in hz")]
-[OperationParameter(2, VariableParam, ParameterType.VariableReference, "Variable to store the pwm port with.")]
 public class InitPwmOperation : OperationBase
 {
+    public const string OpCodeValue = "init_pwm";
+    
     private const string PinNameParam = "PinName";
     private const string VariableParam = "Variable";
     private const string FrequencyParam = "Frequency";
 
     private readonly IPwmOutputController _pwmOutputController;
     private readonly PinLookup _pins;
+    
+    protected override string OpCode => OpCodeValue;
+    
+    protected override IReadOnlyList<OperationParameter> Parameters => new[]
+    {
+        new OperationParameter(PinNameParam, ParameterType.String, "Name of the pin to create a PWM port for."),
+        new OperationParameter(FrequencyParam, ParameterType.Integer, "Frequency in hz"),
+        new OperationParameter(VariableParam, ParameterType.VariableReference, "Variable to store the pwm port with."),
+    };
 
     public InitPwmOperation(IPwmOutputController pwmOutputController, PinLookup pinLookup)
     {

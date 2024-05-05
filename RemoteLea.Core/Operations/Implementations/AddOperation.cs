@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace RemoteLea.Core.Operations.Implementations;
@@ -7,16 +8,21 @@ namespace RemoteLea.Core.Operations.Implementations;
 /// Operation that adds an integer to the specified variable. Supports negative numbers for
 /// subtraction.
 /// </summary>
-[Operation(OpCode)]
-[OperationParameter(0, ValueParam, ValueType, "Value to add")]
-[OperationParameter(1, OutputParam, OutputType, "Variable to add the value to")]
 public class AddOperation : OperationBase
 {
-    public const string OpCode = "add";
+    public const string OpCodeValue = "add";
     public const string ValueParam = "Value";
     public const string OutputParam = "StorageVariable";
     private const ParameterType ValueType = ParameterType.Integer;
     private const ParameterType OutputType = ParameterType.VariableReference;
+
+    protected override string OpCode => OpCodeValue;
+
+    protected override IReadOnlyList<OperationParameter> Parameters => new[]
+    {
+        new OperationParameter(ValueParam, ValueType, "Value to add"),
+        new OperationParameter(OutputParam, OutputType, "Variable to add the value to")
+    };
 
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
