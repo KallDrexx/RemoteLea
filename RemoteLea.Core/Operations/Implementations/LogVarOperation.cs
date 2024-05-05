@@ -7,7 +7,7 @@ namespace RemoteLea.Core.Operations.Implementations;
 [OperationParameter(0, VariableParam, ParameterType.VariableReference, "Variable to log the value of")]
 public class LogVarOperation : OperationBase
 {
-    public const string OpCode = "logvar";
+    public const string OpCode = "log_var";
     public const string VariableParam = "Variable";
     
     protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)

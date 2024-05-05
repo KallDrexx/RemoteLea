@@ -12,7 +12,7 @@ namespace RemoteLea.Meadow.Operations.I2c;
 [OperationParameter(2, DataParam, ParameterType.ByteArray, "Data to write on the i2c bus")]
 public class I2CWriteOperation : OperationBase
 {
-    public const string OpCode = "i2cwrite";
+    public const string OpCode = "i2c_write";
     public const string BusVariable = "BusVariable";
     public const string AddressParam = "Address";
     public const string DataParam = "Data";

@@ -6,7 +6,7 @@ namespace RemoteLea.Core.Operations.Implementations;
 [OperationParameter(0, TimeParam, ParameterType.Integer, "Number of milliseconds to wait for")]
 public class DelayOperation : OperationBase
 {
-    public const string OpCode = "dly";
+    public const string OpCode = "delay";
     public const string TimeParam = "Milliseconds";
 
     protected override async ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)

@@ -11,7 +11,7 @@ namespace RemoteLea.Meadow.Operations.Pwm;
 /// Creates a PWM port for the provided pin and saves it into the specified variable. PWm is started
 /// with a zero duty cycle.
 /// </summary>
-[Operation("initpwm")]
+[Operation("init_pwm")]
 [OperationParameter(0, PinNameParam, ParameterType.String, "Name of the pin to create a PWM port for.")]
 [OperationParameter(1, FrequencyParam, ParameterType.Integer, "Frequency in hz")]
 [OperationParameter(2, VariableParam, ParameterType.VariableReference, "Variable to store the pwm port with.")]

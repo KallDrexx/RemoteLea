@@ -5,7 +5,7 @@ using RemoteLea.Core.Operations;
 
 namespace RemoteLea.Meadow.Operations.Pwm;
 
-[Operation("pwmduty")]
+[Operation("set_pwm_duty_cycle")]
 [OperationParameter(0, VariableParam, ParameterType.VariableReference, "Variable with the pwm port")]
 [OperationParameter(1, DutyCycleParam, ParameterType.Integer,
     "Percent between 0 and 100 for the duty cycle of the pwm")]

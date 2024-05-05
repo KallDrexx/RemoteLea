@@ -9,7 +9,7 @@ namespace RemoteLea.Meadow.Operations.I2c;
 [OperationParameter(0, StorageVariable, ParameterType.VariableReference, "Variable to store the i2c bus in")]
 public class InitI2CBus : OperationBase
 {
-    public const string OpCode = "initi2cbus";
+    public const string OpCode = "init_i2c_bus";
     public const string StorageVariable = "StorageVariable";
     private readonly II2cController _i2CController;
 
