@@ -3,6 +3,7 @@ using Meadow;
 using Meadow.Hardware;
 using RemoteLea.Core.Operations;
 using RemoteLea.Meadow.Operations.I2c;
+using RemoteLea.Meadow.Operations.Mcp;
 using RemoteLea.Meadow.Operations.PinIo;
 using RemoteLea.Meadow.Operations.Pwm;
 
@@ -21,19 +22,24 @@ public static class MeadowOperations
         if (device is II2cController i2CController)
         {
             yield return new InitI2CBus(i2CController);
-            yield return new I2CWriteOperation();
         }
 
         if (device is IDigitalInputController inputController)
         {
             yield return new InitInputPortOperation(inputController, pins);
-            yield return new SaveInputStateOperation();
-            yield return new WaitForInputPortStateOperation();
         }
 
         if (device is IDigitalOutputController outputController)
         {
             yield return new InitOutputPortOperation(outputController, pins);
         }
+
+        yield return new I2CWriteOperation();
+        yield return new InitMcp23008();
+        yield return new InitMcp23XInputOperation();
+        yield return new InitMcp23XOutputOperation();
+        yield return new SaveInputStateOperation();
+        yield return new SetOutputPortStateOperation();
+        yield return new WaitForInputPortStateOperation();
     }
 }
