@@ -11,7 +11,7 @@ public class InstructionSerializerTests
     public void Can_Deserialize_Multiple_Instructions()
     {
         var input = """
-                    set $var 12
+                    set $var 12 # comment
                     some_label: add 5 $var
                     jump "some_label"
                     """;

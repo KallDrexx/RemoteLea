@@ -75,7 +75,7 @@ public class InstructionSerializer
         if (tokenStart == null)
         {
             // Empty line
-            return (null, tokenEnd);
+            return (null, tokenEnd + 1);
         }
 
         if (lineContent[tokenEnd] == ':')
@@ -242,6 +242,7 @@ public class InstructionSerializer
         var tokenStart = (int?)null;
         var isQuoted = false;
         var escapeCharEncountered = false;
+        var isInComment = false;
 
         for (var index = startIndex; index < lineContent.Length; index++)
         {
@@ -251,9 +252,21 @@ public class InstructionSerializer
                 {
                     return (null, index); // no next token
                 }
+                
+                if (isInComment)
+                {
+                    // If we are in a comment, then ignore this set of tokens
+                    return (null, index);
+                }
 
                 // otherwise the last token was the one before the newline
                 return (tokenStart.Value, index - 1);
+            }
+
+            if (isInComment)
+            {
+                // Once we are in a comment ignore all other characters until the end of line
+                continue;
             }
 
             if (char.IsWhiteSpace(lineContent[index]) && !isQuoted)
@@ -274,6 +287,10 @@ public class InstructionSerializer
                 if (lineContent[index] == '"')
                 {
                     isQuoted = true;
+                }
+                else if (lineContent[index] == '#')
+                {
+                    isInComment = true;
                 }
 
                 continue;
