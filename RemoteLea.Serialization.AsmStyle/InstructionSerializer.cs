@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using RemoteLea.Core;
 using RemoteLea.Core.Operations;
@@ -209,7 +210,7 @@ public class InstructionSerializer
             var byteArray = new byte[tokenSlice.Length / 2];
             for (var x = 0; x < tokenSlice.Length; x += 2)
             {
-                if (!byte.TryParse(tokenSlice.Slice(x, 2), out var value))
+                if (!byte.TryParse(tokenSlice.Slice(x, 2), NumberStyles.HexNumber, null, out var value))
                 {
                     var message = "Invalid hex value in byte array";
                     throw new InstructionDeserializationException(lineNumber, tokenStart + 2 + x, message);

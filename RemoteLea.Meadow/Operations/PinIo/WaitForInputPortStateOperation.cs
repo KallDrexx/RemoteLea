@@ -43,17 +43,31 @@ public class WaitForInputPortStateOperation : OperationBase
             context.LogInvalidRequiredArgument(StateToWaitFor, ParameterType.Bool);
             return OperationExecutionResult.Failure();
         }
-        
-        if (port is not IDigitalInputPort digitalInputPort)
-        {
-            context.Log(LogLevel.Error, $"The specified port variable '{portVariable.Value.VariableName}' is not a digital input port");
-            return OperationExecutionResult.Failure();
-        }
-        
+
         context.Log(LogLevel.Debug, $"Waiting for digital input port '{portVariable.Value.VariableName} to reach state '{desiredState}'");
-        while (digitalInputPort.State != desiredState.Value)
+        while (true)
         {
-            await Task.Delay(100);
+            await Task.Delay(1);
+            bool state;
+            if (port is IDigitalInputPort digitalInputPort)
+            {
+                state = digitalInputPort.State;
+            }
+            else if (port is IDigitalInterruptPort digitalInterruptPort)
+            {
+                state = digitalInterruptPort.State;
+            }
+            else
+            {
+                context.Log(LogLevel.Error, $"The specified port variable '{portVariable.Value.VariableName}' " +
+                                            "is not a digital input or interrupt port");
+                return OperationExecutionResult.Failure();
+            }
+            
+            if (state == desiredState.Value)
+            {
+                break;
+            }
         }
         
         context.Log(LogLevel.Debug, $"Digital input port '{portVariable.Value.VariableName} reached state '{desiredState}'");

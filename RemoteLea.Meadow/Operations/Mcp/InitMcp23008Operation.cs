@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
+using Meadow;
 using Meadow.Foundation.ICs.IOExpanders;
 using Meadow.Hardware;
 using RemoteLea.Core;
@@ -7,21 +9,32 @@ using RemoteLea.Core.Operations;
 
 namespace RemoteLea.Meadow.Operations.Mcp;
 
-public class InitMcp23008 : OperationBase
+public class InitMcp23008Operation : OperationBase
 {
     public const string OpCodeValue = "init_mcp23008";
-    private const string AddressParam = "Address";  
     private const string I2cBusParam = "I2cBus";
+    private const string AddressParam = "Address";
+    private const string InterruptPinName = "InterruptPin";
+    private const string ResetPinName = "ResetPin";
     private const string StorageVariableParam = "Variable";
-    
+
+    private readonly PinLookup _pinLookup;
+
+    public InitMcp23008Operation(PinLookup pinLookup)
+    {
+        _pinLookup = pinLookup;
+    }
+
     protected override string OpCode => OpCodeValue;
 
     protected override IReadOnlyList<OperationParameter> Parameters => new[]
     {
-        new OperationParameter(AddressParam, ParameterType.ByteArray, "The address of the MCP23008"),
         new OperationParameter(I2cBusParam, ParameterType.VariableReference,
             "The variable containing an initialized I2C bus to use"),
-
+        
+        new OperationParameter(AddressParam, ParameterType.ByteArray, "The address of the MCP23008"),
+        new OperationParameter(InterruptPinName, ParameterType.String, "Pin name for mcp interrupt"),
+        new OperationParameter(ResetPinName, ParameterType.String, "Pin name for mcp reset"),
         new OperationParameter(StorageVariableParam, ParameterType.VariableReference,
             "Variable to store the mcp instance in"),
     };
@@ -66,12 +79,45 @@ public class InitMcp23008 : OperationBase
             context.LogInvalidRequiredArgument(StorageVariableParam, ParameterType.VariableReference);
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
+
+        var interruptPinName = context.ParseStringArgument(InterruptPinName);
+        if (interruptPinName == null)
+        {
+            context.LogInvalidRequiredArgument(InterruptPinName, ParameterType.String);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+        }
         
-        var mcp = new Mcp23008(i2C, address[0]);
+        var interruptPin = _pinLookup.Get(interruptPinName);
+        if (interruptPin == null)
+        {
+            context.Log(LogLevel.Error, $"The specified interrupt pin '{interruptPinName}' does not exist on this device");
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+        }
+        
+        var resetPinName = context.ParseStringArgument(ResetPinName);
+        if (resetPinName == null)
+        {
+            context.LogInvalidRequiredArgument(ResetPinName, ParameterType.String);
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+        }
+        
+        var resetPin = _pinLookup.Get(resetPinName);
+        if (resetPin == null)
+        {
+            context.Log(LogLevel.Error, $"The specified reset pin '{resetPinName}' does not exist on this device");
+            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+        }
+        
+        var interrupt = interruptPin.CreateDigitalInterruptPort(InterruptMode.EdgeRising, ResistorMode.InternalPullDown);
+        var reset = resetPin.CreateDigitalOutputPort();
+        
+        var mcp = new Mcp23008(i2C, address[0], interrupt, reset);
         context.Outputs[storageVariable.Value.VariableName] = mcp;
         
         context.Log(LogLevel.Debug,
             $"MCP23008 created with address {address[0]} to variable '{storageVariable.Value.VariableName}'");
+        
+        Console.WriteLine($"MCP pins: {interruptPinName}, {resetPinName}");
         
         return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());
     }

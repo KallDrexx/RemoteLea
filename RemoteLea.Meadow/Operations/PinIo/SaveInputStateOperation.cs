@@ -22,37 +22,54 @@ public class SaveInputStateOperation : OperationBase
         new OperationParameter(StateVariableParam, ParameterType.VariableReference, "Variable to store the state in"),
     };
 
-    protected override ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
+    protected override async ValueTask<OperationExecutionResult> ExecuteInternalAsync(IOperationExecutionContext context)
     {
         var portVariable = context.ParseVariableArgument(PortVariableParam);
         if (portVariable == null)
         {
             context.LogInvalidRequiredArgument(PortVariableParam, ParameterType.VariableReference);
-            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+            return OperationExecutionResult.Failure();
         }
         
         if (context.Variables.TryGetValue(portVariable.Value.VariableName, out var port) == false)
         {
             context.Log(LogLevel.Error, $"The specified port variable '{portVariable.Value.VariableName}' does not exist");
-            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+            return OperationExecutionResult.Failure();
         }
         
         var stateVariable = context.ParseVariableArgument(StateVariableParam);
         if (stateVariable == null)
         {
             context.LogInvalidRequiredArgument(StateVariableParam, ParameterType.VariableReference);
-            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+            return OperationExecutionResult.Failure();
         }
 
-        if (port is not IDigitalInputPort digitalInputPort)
+        bool state;
+        if (port is IDigitalInputPort digitalInputPort)
         {
-            context.Log(LogLevel.Error, $"The specified port variable '{portVariable.Value.VariableName}' is not a digital input port");
-            return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
+            state = digitalInputPort.State;
+        }
+        else if (port is IDigitalInterruptPort digitalInterruptPort)
+        {
+            state = digitalInterruptPort.State;
+        }
+        else
+        {
+            context.Log(LogLevel.Error, $"The specified port variable '{portVariable.Value.VariableName}' " +
+                                        "is not a digital input or interrupt port");
+            return OperationExecutionResult.Failure();
         }
 
-        context.Outputs[stateVariable.Value.VariableName] = digitalInputPort.State;
-        context.Log(LogLevel.Debug, $"Saved state of digital input port '{portVariable.Value.VariableName} to variable '{stateVariable.Value.VariableName}'");
+        await Task.Delay(1);
+
+        if (state)
+        {
+            context.Log(LogLevel.Info, $"State of digital input port '{portVariable.Value.VariableName}' is '{state}'");
+        }
+
+        context.Outputs[stateVariable.Value.VariableName] = state;
+        context.Log(LogLevel.Debug, $"Saved state of digital input port '{portVariable.Value.VariableName} ({state}) to variable '{stateVariable.Value.VariableName}'");
         
-        return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());
+        return OperationExecutionResult.Success();
     }
 }

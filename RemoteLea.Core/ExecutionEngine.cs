@@ -29,13 +29,13 @@ public class ExecutionEngine
     /// </summary>
     public async Task Execute(InstructionSet instructions)
     {
-        _cancellationTokenSource = new CancellationTokenSource();
-        var executionContext = new OperationExecutionContext(Variables, _outputs, _cancellationTokenSource.Token);
-
-        ClearVariables();
-
         try
         {
+            _cancellationTokenSource = new CancellationTokenSource();
+            var executionContext = new OperationExecutionContext(Variables, _outputs, _cancellationTokenSource.Token);
+
+            ClearVariables();
+
             // We have to manage the instruction set enumerator ourselves to properly
             // move to labels.
             using var enumerator = instructions.GetEnumerator();
@@ -135,7 +135,7 @@ public class ExecutionEngine
         {
             disposable.Dispose();
         }
-        
+
         Variables.Clear();
     }
 

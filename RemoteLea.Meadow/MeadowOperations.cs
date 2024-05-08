@@ -35,7 +35,7 @@ public static class MeadowOperations
         }
 
         yield return new I2CWriteOperation();
-        yield return new InitMcp23008();
+        yield return new InitMcp23008Operation(pins);
         yield return new InitMcp23XInputOperation();
         yield return new InitMcp23XOutputOperation();
         yield return new SaveInputStateOperation();

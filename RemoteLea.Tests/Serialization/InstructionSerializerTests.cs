@@ -29,7 +29,7 @@ public class InstructionSerializerTests
                 { SetValueOperation.VariableOutput, new VariableReferenceArgumentValue("var") },
                 { SetValueOperation.ValueParam, new IntArgumentValue(12) },
             }));
-
+        
         enumerator.MoveNext().ShouldBeTrue();
         enumerator.Current.ShouldMatch(new Instruction(
             AddOperation.OpCodeValue,
