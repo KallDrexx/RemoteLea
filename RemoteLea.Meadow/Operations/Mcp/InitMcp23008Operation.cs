@@ -114,6 +114,10 @@ public class InitMcp23008Operation : OperationBase
         var mcp = new Mcp23008(i2C, address[0], interrupt, reset);
         context.Outputs[storageVariable.Value.VariableName] = mcp;
         
+        // Put interrupt and reset pins in a variable so it gets cleaned up on the next execution
+        context.Outputs[$"__pin_{interruptPinName}"] = interruptPin;
+        context.Outputs[$"__pin_{resetPinName}"] = resetPin;
+        
         context.Log(LogLevel.Debug,
             $"MCP23008 created with address {address[0]} to variable '{storageVariable.Value.VariableName}'");
         

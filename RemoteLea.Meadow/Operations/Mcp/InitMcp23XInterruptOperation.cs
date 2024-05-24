@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Meadow;
 using Meadow.Foundation.ICs.IOExpanders;
@@ -67,8 +68,16 @@ public class InitMcp23XInterruptOperation : OperationBase
             context.Log(LogLevel.Error, $"The specified MCP pin '{pinName}' does not exist.");
             return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Failure());
         }
+        
 
-        var interrupt = pin.CreateDigitalInterruptPort(InterruptMode.EdgeBoth, ResistorMode.ExternalPullUp);
+        var interrupt = pin.CreateDigitalInterruptPort(InterruptMode.EdgeBoth, ResistorMode.InternalPullUp);
+        interrupt.Changed += (sender, args) =>
+        {
+            context.Log(LogLevel.Info, $"Interrupt on pin {pinName} state changed to {args.New.State}");
+        };
+        
+        Console.WriteLine($"TEST: {pin.Name}, {interrupt.InterruptMode}, {interrupt.DebounceDuration}");
+        
         context.Outputs[storageVariableName.Value.VariableName] = interrupt;
         
         return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());

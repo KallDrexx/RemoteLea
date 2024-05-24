@@ -62,10 +62,7 @@ public class SaveInputStateOperation : OperationBase
 
         await Task.Delay(1);
 
-        if (state)
-        {
-            context.Log(LogLevel.Info, $"State of digital input port '{portVariable.Value.VariableName}' is '{state}'");
-        }
+        // context.Log(LogLevel.Info, $"DEBUG: {portVariable.Value.VariableName}.State = {state}");
 
         context.Outputs[stateVariable.Value.VariableName] = state;
         context.Log(LogLevel.Debug, $"Saved state of digital input port '{portVariable.Value.VariableName} ({state}) to variable '{stateVariable.Value.VariableName}'");
