@@ -17,6 +17,7 @@ public class ExecutionEngine
     protected readonly Dictionary<string, object> Variables = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, object> _outputs = new(StringComparer.OrdinalIgnoreCase);
     private CancellationTokenSource _cancellationTokenSource = new();
+    private Task? _currentExecution;
 
     public ExecutionEngine(OperationManager operationManager, LogFunction logFunction)
     {
@@ -31,10 +32,30 @@ public class ExecutionEngine
     {
         try
         {
+            var currentTask = _currentExecution;
+            if (currentTask != null)
+            {
+                _cancellationTokenSource.Cancel();
+                var timeoutTask = Task.Run(async () => await Task.Delay(1000));
+                await Task.WhenAny(currentTask, timeoutTask);
+            }
+
+            _currentExecution = Task.Run(async () => await ExecuteInternal(instructions));
+        }
+        catch (Exception exception)
+        {
+            _logFunction(LogLevel.Error, 0, GetType().Name, $"Execution exception: {exception}");
+        }
+    }
+    
+    private async Task ExecuteInternal(InstructionSet instructions)
+    {
+        try
+        {
+            ClearVariables();
+            
             _cancellationTokenSource = new CancellationTokenSource();
             var executionContext = new OperationExecutionContext(Variables, _outputs, _cancellationTokenSource.Token);
-
-            ClearVariables();
 
             // We have to manage the instruction set enumerator ourselves to properly
             // move to labels.
