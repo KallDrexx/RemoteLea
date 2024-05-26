@@ -113,4 +113,35 @@ public static class OperationExecutionContextUtilities
 
         return variableArg;
     }
+    
+    public static bool TryGetVariableValueFromArgument<T>(
+        this IOperationExecutionContext context,
+        string argumentName,
+        out T? value)
+    {
+        value = default;
+        
+        var variable = context.ParseVariableArgument(argumentName);
+        if (variable == null)
+        {
+            context.LogInvalidRequiredArgument(argumentName, ParameterType.VariableReference);
+            return false;
+        }
+        
+        if (!context.Variables.TryGetValue(variable.Value.VariableName, out var variableValue))
+        {
+            context.Log.ReferencedVariableDoesntExist(variable.Value.VariableName);
+            return false;
+        }
+        
+        if (variableValue is not T typedValue)
+        {
+            context.Log(LogLevel.Error, $"Variable '{variable.Value.VariableName}' is of type " +
+                                        $"{variableValue.GetType()} but {typeof(T)} was expected");
+            return false;
+        }
+
+        value = typedValue;
+        return true;
+    }
 }

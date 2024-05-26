@@ -6,6 +6,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Meadow.Logging;
+using Meadow.Units;
 using RemoteLea.Core.Operations;
 
 namespace RemoteLea.Meadow.F7Feather;
@@ -25,6 +26,8 @@ public class MeadowApp : App<F7FeatherV2>
         Resolver.Log.AddProvider(cloudLogger);
         Resolver.Services.Add(cloudLogger);
         Resolver.Log.Info("Initialize...");
+
+        var spiBus = Device.CreateSpiBus(new Frequency(), 3);
         
         return Task.CompletedTask;
     }

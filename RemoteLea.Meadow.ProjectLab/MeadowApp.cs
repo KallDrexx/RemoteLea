@@ -84,7 +84,6 @@ namespace RemoteLea.Meadow.ProjectLab
             // }
 
             // _projectLab = global::Meadow.Devices.ProjectLab.Create();
-            
             return Task.CompletedTask;
         }
 
