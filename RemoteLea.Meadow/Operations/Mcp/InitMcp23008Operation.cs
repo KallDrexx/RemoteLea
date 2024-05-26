@@ -115,8 +115,8 @@ public class InitMcp23008Operation : OperationBase
         context.Outputs[storageVariable.Value.VariableName] = mcp;
         
         // Put interrupt and reset pins in a variable so it gets cleaned up on the next execution
-        context.Outputs[$"__pin_{interruptPinName}"] = interruptPin;
-        context.Outputs[$"__pin_{resetPinName}"] = resetPin;
+        context.Outputs[$"__port_{interruptPinName}"] = interrupt;
+        context.Outputs[$"__port_{resetPinName}"] = reset;
         
         context.Log(LogLevel.Debug,
             $"MCP23008 created with address {address[0]} to variable '{storageVariable.Value.VariableName}'");

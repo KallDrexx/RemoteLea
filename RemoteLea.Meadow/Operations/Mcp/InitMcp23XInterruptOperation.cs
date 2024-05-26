@@ -76,8 +76,6 @@ public class InitMcp23XInterruptOperation : OperationBase
             context.Log(LogLevel.Info, $"Interrupt on pin {pinName} state changed to {args.New.State}");
         };
         
-        Console.WriteLine($"TEST: {pin.Name}, {interrupt.InterruptMode}, {interrupt.DebounceDuration}");
-        
         context.Outputs[storageVariableName.Value.VariableName] = interrupt;
         
         return new ValueTask<OperationExecutionResult>(OperationExecutionResult.Success());

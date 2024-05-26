@@ -53,7 +53,7 @@ public class ExecutionEngine
         try
         {
             ClearVariables();
-            
+
             _cancellationTokenSource = new CancellationTokenSource();
             var executionContext = new OperationExecutionContext(Variables, _outputs, _cancellationTokenSource.Token);
 
@@ -135,6 +135,10 @@ public class ExecutionEngine
                 _logFunction(LogLevel.Info, 0, GetType().Name, "Execution finished");
             }
         }
+        catch (TaskCanceledException)
+        {
+            // Ignore task cancellation
+        }
         catch (Exception exception)
         {
             _logFunction(LogLevel.Error, 0, GetType().Name, $"Execution exception: {exception}");
@@ -152,9 +156,12 @@ public class ExecutionEngine
     private void ClearVariables()
     {
         // Dispose any disposable variables
-        foreach (var disposable in Variables.Values.OfType<IDisposable>())
+        foreach (var (key, value) in Variables)
         {
-            disposable.Dispose();
+            if (value is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
         }
 
         Variables.Clear();

@@ -24,7 +24,6 @@ namespace RemoteLea.Meadow.ProjectLab
             Resolver.Services.Add(cloudLogger);
             Resolver.Log.Info("Initialize...");
             
-
             // var red = Device.CreatePwmPort(Device.Pins.D09, new Frequency(100), 0f);
             // red.Start();
             // var green = Device.CreatePwmPort(Device.Pins.D10, new Frequency(100), 0f);
