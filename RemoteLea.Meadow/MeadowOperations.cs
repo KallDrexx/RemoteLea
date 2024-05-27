@@ -6,6 +6,7 @@ using RemoteLea.Meadow.Operations.I2c;
 using RemoteLea.Meadow.Operations.Mcp;
 using RemoteLea.Meadow.Operations.PinIo;
 using RemoteLea.Meadow.Operations.Pwm;
+using RemoteLea.Meadow.Operations.Spi;
 
 namespace RemoteLea.Meadow;
 
@@ -34,6 +35,11 @@ public static class MeadowOperations
             yield return new InitOutputPortOperation(outputController, pins);
         }
 
+        if (device is ISpiController spiController)
+        {
+            yield return new InitSpiBusOperation(spiController, pins);
+        }
+
         yield return new I2CWriteOperation();
         yield return new InitMcp23008Operation(pins);
         yield return new InitMcp23XInputOperation();
@@ -41,6 +47,8 @@ public static class MeadowOperations
         yield return new InitMcp23XOutputOperation();
         yield return new SaveInputStateOperation();
         yield return new SetOutputPortStateOperation();
+        yield return new SpiReadOperation();
+        yield return new SpiWriteOperation();
         yield return new WaitForInputPortStateOperation();
     }
 }
