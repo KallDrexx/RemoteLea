@@ -24,8 +24,6 @@ namespace RemoteLea.Meadow.ProjectLab
             Resolver.Services.Add(cloudLogger);
             Resolver.Log.Info("Initialize...");
             
-            Device.Pins.
-            
             return Task.CompletedTask;
         }
 

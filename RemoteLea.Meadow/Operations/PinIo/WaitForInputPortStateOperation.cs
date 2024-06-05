@@ -44,7 +44,7 @@ public class WaitForInputPortStateOperation : OperationBase
             return OperationExecutionResult.Failure();
         }
 
-        context.Log(LogLevel.Debug, $"Waiting for digital input port '{portVariable.Value.VariableName} to reach state '{desiredState}'");
+        context.Log(LogLevel.Info, $"Waiting for digital input port '{portVariable.Value.VariableName} to reach state '{desiredState}'");
         while (true)
         {
             await Task.Delay(1);
@@ -70,7 +70,7 @@ public class WaitForInputPortStateOperation : OperationBase
             }
         }
         
-        context.Log(LogLevel.Debug, $"Digital input port '{portVariable.Value.VariableName} reached state '{desiredState}'");
+        context.Log(LogLevel.Info, $"Digital input port '{portVariable.Value.VariableName} reached state '{desiredState}'");
         return OperationExecutionResult.Success();
     }
 }
